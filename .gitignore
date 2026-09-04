@@ -1,0 +1,34 @@
+# R and RStudio user state
+.Rhistory
+.RData
+.Ruserdata
+.Rproj.user/
+
+# Reproducible environments and local package caches
+renv/library/
+renv/staging/
+renv/cache/
+renv/python/
+
+# Credentials and local secrets
+.httr-oauth
+droptoken.rds
+*.pem
+*.key
+
+# Local execution artifacts
+VideoDecodeStats/
+*.log
+*.tmp
+*.temp
+
+# Deployment-specific state
+rsconnect/
+
+# OS and editor files
+.DS_Store
+Thumbs.db
+.vscode/
+
+# Generated analysis outputs
+R/legacy/output/
