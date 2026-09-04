@@ -11,7 +11,8 @@ Aplicacao Shiny para monitoramento de casos, incidencia, obitos e indicadores ep
 - `R_code/data.R`: ingestao e preparacao dos dados para os paineis.
 - `R_code/modules/`: componentes de UI das abas existentes.
 - `R_code/ui.R` e `R_code/server.R`: composicao da interface e logica reativa.
-- `www/`: datasets, imagens, JavaScript e CSS servidos pelo Shiny.
+- `data/`: datasets versionados e dados auxiliares usados nos calculos.
+- `www/`: imagens, JavaScript, CSS e HTML servidos pelo Shiny.
 - `R_code/legacy/`: scripts antigos/experimentais mantidos para referencia, fora do fluxo de execucao.
 - `renv.lock`: versoes das dependencias R usadas na aplicacao.
 
@@ -24,7 +25,7 @@ renv::restore()
 shiny::runApp()
 ```
 
-O `app.R` ativa automaticamente o ambiente local quando `renv/activate.R` esta presente. Os dados principais sao lidos de `www/dataset.csv` e `www/pop_municipios.xlsx`.
+O `app.R` ativa automaticamente o ambiente local quando `renv/activate.R` esta presente. Os dados principais sao lidos de `data/dataset.csv`; dados auxiliares ficam em `data/auxiliary/`.
 
 ## Dados e seguranca
 

@@ -5,6 +5,7 @@ project_root <- if (!is.null(app_file) && nzchar(app_file)) {
   normalizePath(getwd())
 }
 setwd(project_root)
+data_dir <- file.path(project_root, "data")
 
 if (file.exists(file.path(project_root, "renv/activate.R"))) {
   source(file.path(project_root, "renv/activate.R"), encoding = "UTF-8")

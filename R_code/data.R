@@ -1,12 +1,13 @@
 options(warn = 0)
+data_dir <- file.path(getwd(), "data")
 ################################################################################################################
 ######################################## LEITURA DE DADOS ######################################################
 ################################################################################################################
-#data_obitos               <- read.table(file = "www/obitos.csv",header = T,sep = ";")
+#data_obitos               <- read.table(file = file.path(data_dir, "obitos.csv"),header = T,sep = ";")
 #dataset1                    <- drop_read_csv(file = "data_covid/dataset.csv",sep=";", header=T, stringsAsFactors = F,dtoken = token )
-dataset1               <- read.table(file = "www/dataset.csv",header = T,sep = ";")
+dataset1               <- read.table(file = file.path(data_dir, "dataset.csv"),header = T,sep = ";")
 
-populacao_municipio        <- readxl::read_xlsx(path = "www/pop_municipios.xlsx",col_names = TRUE,sheet = "Planilha1" )
+populacao_municipio        <- readxl::read_xlsx(path = file.path(data_dir, "auxiliary", "pop_municipios.xlsx"),col_names = TRUE,sheet = "Planilha1" )
 dataset1$coleta             <- as.Date(strptime(dataset1$coleta, "%d/%m/%Y"))
 dados2                    <- dataset1
 link                      <- dataset1$atualizado[2]
@@ -231,9 +232,9 @@ pal2                  <- colorBin(palette = heatcols,domain = incidencia_for_hea
 
 ############# BAIRROS ########
 
-coordenadas_bairros            <- read.table(file = "www/latitude-longitude-bairros.csv",header = T,sep = ";",encoding = "UTF-8")
+coordenadas_bairros            <- read.table(file = file.path(data_dir, "auxiliary", "latitude-longitude-bairros.csv"),header = T,sep = ";",encoding = "UTF-8")
 coordenadas_bairros_pr         <- coordenadas_bairros %>% filter(uf == "PR")
 pos                            <- which(toupper(coordenadas_bairros_pr$municipio) %in%  regional_maps$nome )
 coordenadas_bairros_15regional <- coordenadas_bairros_pr[pos,]
-coordenadas_bairros            <- read.table(file = "www/latitude-longitude-bairros.csv",header = T,sep = ";",encoding = "UTF-8")
+coordenadas_bairros            <- read.table(file = file.path(data_dir, "auxiliary", "latitude-longitude-bairros.csv"),header = T,sep = ";",encoding = "UTF-8")
 data_list <- list('Casos por dia'=data_casos,'Incidências'=incidencias)
