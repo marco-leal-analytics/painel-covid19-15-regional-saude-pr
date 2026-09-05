@@ -9,6 +9,8 @@ server <- function(input, output, session) {
   nivel_riscoServer("nivel_risco")
   colaboradoresServer("colaboradores")
   calculadora_seirServer("calculadora")
+  comportamento_inicialServer("comportamento_inicial")
+  configuracoesServer("configuracoes")
 
   
   #####################################################################################################################
@@ -101,51 +103,6 @@ server <- function(input, output, session) {
     
   })
  
-  dados_table <- data_casos
-  observeEvent(input$select_dadoscasos, {
-    output$dadosselecttext <- renderText({
-      
-      as.character(input$select_dadoscasos)
-      
-    })
-    
-    if(as.character(input$select_dadoscasos) == 'Casos Por Dia'){
-      
-      dados_table <- data_casos[,c(1,which(apply(data_casos[2:32],2,sum) > 0)+1)]
-      sum(dados_table$ATALAIA)
-      
-    }else if (as.character(input$select_dadoscasos) == 'Incidências'){
-      
-      
-      dados_table <- incidencias[,c(1,which(apply(incidencias[2:32],2,sum) > 0)+1)]
-      
-      
-      
-    }else if (as.character(input$select_dadoscasos) == 'Casos Acumulados'){
-      
-      dados_table <- as.data.frame(apply(data_casos[,2:32],2,cumsum))
-      dados_table <- dados_table[,which(apply(dados_table,2,sum) > 0)]
-      dados_table <- data.frame(DATAS=data_casos[,1],dados_table)
-      
-      
-    }
-    
-    output$tabela_qtdcasos <- renderDataTable(as.data.frame(dados_table),
-                                              options = list(
-                                                pageLength = 10,
-                                                scrollX=TRUE,
-                                                searching = FALSE,
-                                                autoWidth = TRUE
-                                                
-                                                
-                                              )
-    )
-    
-    
-    
-    
-    
-  })
   
   
   observeEvent(list(input$toTop1,input$toTop2,input$toTop3,input$toTop4,input$toTop5,input$toTop6), {
@@ -153,26 +110,6 @@ server <- function(input, output, session) {
   })
   
   
-  output$obitos <- renderDataTable(as.data.frame(obitos_mun[,obitos_mun[1,]>0]),
-                                   options = list(
-                                     pageLength = 10,
-                                     scrollX=TRUE,
-                                     searching = FALSE,
-                                     autoWidth = TRUE)
-  )
-  
-  
-  
-  output$pop_cog <- renderDataTable(as.data.frame(cbind(populacao_municipio[1:16,],populacao_municipio[17:32,])),
-                                    options = list(
-                                      pageLength = 16,
-                                      scrollX=TRUE,
-                                      searching = FALSE,
-                                      autoWidth = TRUE
-                                      
-                                      
-                                    )
-  )
   
   
   
@@ -233,7 +170,7 @@ server <- function(input, output, session) {
       output$buttons <- renderUI({
         if ( as.character(credentials[[input$username]]$username) == 'mleal'){
           appendTab(inputId = "navbar",
-                    configuracoes
+                    configuracoesUI("configuracoes")
           )
           
           print(credentials[[input$username]])
@@ -280,28 +217,6 @@ server <- function(input, output, session) {
     } 
   })
   
-  
-  output$dados_casos <- renderDataTable(as.data.frame(dados2),
-                                        options = list(
-                                          pageLength = 10,
-                                          scrollX=TRUE,
-                                          searching = FALSE,
-                                          autoWidth = TRUE,
-                                          columnDefs = list(list(targets=c(0), visible=TRUE, width='20'),
-                                                            list(targets=c(1), visible=TRUE, width='50'),
-                                                            list(targets=c(2), visible=TRUE, width='100'),
-                                                            list(targets=c(3), visible=TRUE, width='250'),
-                                                            list(targets=c(4), visible=TRUE, width='35'),
-                                                            list(targets=c(5), visible=TRUE, width='35'),
-                                                            list(targets=c(6), visible=TRUE, width='35'),
-                                                            list(targets=c(7), visible=TRUE, width='35'),
-                                                            list(targets=c(8), visible=TRUE, width='35'),
-                                                            list(targets=c(9), visible=TRUE, width='35'),
-                                                            
-                                                            list(targets='_all', visible=FALSE))
-                                          
-                                        )
-  )
   
   
   
@@ -436,178 +351,6 @@ server <- function(input, output, session) {
   
   
   
-  
-  ####################################################################################################################
-  #############################          ATRASO DE 15 DIAS            ###############################################
-  ####################################################################################################################
-  
-  #observeEvent(input$cidade2,{
-  
-  
-  
-  output$atraso15 <- renderPlotly({
-    
-    source(file.path(getwd(), "R_code/legacy/source2.R"), local=TRUE, encoding="UTF-8")
-    
-    atraso(15)
-    
-    
-  })
-  
-  
-  
-  
-  
-  
-  ####################################################################################################################
-  #############################          ATRASO DE 30 DIAS            ###############################################
-  ####################################################################################################################
-  
-  
-  
-  
-  output$atraso30 <- renderPlotly({
-    
-    
-    source(file.path(getwd(), "R_code/legacy/source2.R"), local=TRUE, encoding="UTF-8")
-    
-    atraso(30)
-    
-  })
-  
-  
-  
-  
-  
-  ####################################################################################################################
-  #############################          ATRASO DE 45 DIAS            ###############################################
-  ####################################################################################################################
-  
-  
-  
-  
-  output$atraso45 <- renderPlotly({
-    
-    
-    source(file.path(getwd(), "R_code/legacy/source2.R"), local=TRUE, encoding="UTF-8")
-    
-    atraso(45)
-    
-    
-  })
-  
-  
-  
-  
-  
-  ####################################################################################################################
-  #############################          ATRASO DE 60 DIAS            ###############################################
-  ####################################################################################################################
-  
-  
-  
-  
-  output$atraso60 <- renderPlotly({
-    
-    
-    source(file.path(getwd(), "R_code/legacy/source2.R"), local=TRUE, encoding="UTF-8")
-    
-    atraso(60)
-    
-    
-  })
-  
-  
-  
-  
-  
-  ####################################################################################################################
-  #############################          CHEGADA DE 1 ExPOSTO            ###############################################
-  ####################################################################################################################
-  
-  
-  
-  
-  output$espostos1 <- renderPlotly({
-    
-    
-    source(file.path(getwd(), "R_code/legacy/source2.R"), local=TRUE, encoding="UTF-8")
-    
-    espostos(1)
-    
-    
-  })
-  
-  
-  
-  
-  
-  
-  ####################################################################################################################
-  #############################        CHEGADA DE 3 EsPOSTO         ###############################################
-  ####################################################################################################################
-  
-  
-  
-  
-  output$espostos3 <- renderPlotly({
-    
-    source(file.path(getwd(), "R_code/legacy/source2.R"), local=TRUE, encoding="UTF-8")
-    
-    espostos(3)
-    
-    
-  })
-  
-  
-  
-  
-  
-  ####################################################################################################################
-  #############################          CHEGADA DE 5 EsPOSTO            ###############################################
-  ####################################################################################################################
-  
-  
-  
-  
-  output$espostos5 <- renderPlotly({
-    
-    
-    source(file.path(getwd(), "R_code/legacy/source2.R"), local=TRUE, encoding="UTF-8")
-    
-    espostos(5)
-    
-    
-  })
-  
-  
-  
-  
-  
-  ####################################################################################################################
-  #############################          CHEGADA DE 10 EsPOSTO            ###############################################
-  ####################################################################################################################
-  
-  
-  
-  
-  output$espostos10 <- renderPlotly({
-    
-    
-    
-    source(file.path(getwd(), "R_code/legacy/source2.R"), local=TRUE, encoding="UTF-8")
-    
-    espostos(10)
-    
-    
-  })
-  
-  
-  
-  
-  
-  
-  #},ignoreNULL = FALSE,ignoreInit = TRUE)
   
   
 }

@@ -28,7 +28,10 @@ source(file.path(project_root, "R_code/modules/colaboradores/ui.R"), encoding = 
 source(file.path(project_root, "R_code/modules/colaboradores/server.R"), encoding = "UTF-8")
 source(file.path(project_root, "R_code/modules/calculadora/ui.R"), encoding = "UTF-8")
 source(file.path(project_root, "R_code/modules/calculadora/server.R"), encoding = "UTF-8")
-source(file.path(project_root, "R_code/modules/configuracoes.R"), encoding = "UTF-8")
+source(file.path(project_root, "R_code/modules/configuracoes/ui.R"), encoding = "UTF-8")
+source(file.path(project_root, "R_code/modules/configuracoes/server.R"), encoding = "UTF-8")
+source(file.path(project_root, "R_code/modules/comportamento_inicial/ui.R"), encoding = "UTF-8")
+source(file.path(project_root, "R_code/modules/comportamento_inicial/server.R"), encoding = "UTF-8")
 
 source(file.path(project_root, "R_code/ui.R"), encoding = "UTF-8")
 source(file.path(project_root, "R_code/server.R"), encoding = "UTF-8")
