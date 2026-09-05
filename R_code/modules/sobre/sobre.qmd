@@ -132,17 +132,23 @@ Mapas, gráficos interativos e simulações (como os cenários de atraso na ado�
 
 ## Origem e tratamento dos dados
 
+::: {.insight-box}
+### Pipeline de dados em camadas (bronze → prata → ouro)
+
+A limpeza e a agregação dos dados agora acontecem fora da aplicação, em um pipeline próprio (`pipeline/`) organizado no padrão *medallion*: a camada **bronze** guarda os arquivos brutos como chegam da fonte; a camada **prata** normaliza nomes de município, datas, sexo e idade e cruza os registros de casos com a base de população; a camada **ouro** produz as tabelas agregadas (casos por dia, incidência, faixa etária, óbitos, ranking por município) que o painel lê diretamente. A aplicação nunca mais abre planilha ou CSV bruto — apenas os arquivos já tratados da camada ouro.
+:::
+
 ::: {.insight-grid}
 ::: {.insight-box}
 ### Registros municipais
 
-Os dados de casos, óbitos e população dos municípios da 15ª Regional de Saúde são consolidados e disponibilizados para consulta na aba Configurações.
+Os dados de casos, óbitos e população dos municípios da 15ª Regional de Saúde são consolidados pelo pipeline e servem de base para todos os indicadores do painel.
 :::
 
 ::: {.insight-box}
 ### Indicadores calculados
 
-Casos por dia, casos acumulados e incidência por milhão de habitantes são derivados dos registros brutos para permitir comparações entre municípios e ao longo do tempo.
+Casos por dia, casos acumulados e incidência por milhão de habitantes são derivados dos registros tratados para permitir comparações entre municípios e ao longo do tempo.
 :::
 
 ::: {.insight-box}
@@ -152,12 +158,36 @@ O nível de risco, o comportamento inicial e a calculadora SEIR usam modelos est
 :::
 :::
 
+## Atualizações recentes
+
+::: {.insight-grid}
+::: {.insight-box}
+### Pipeline de dados independente
+
+A ingestão, limpeza e agregação dos dados foram extraídas da aplicação para um pipeline dedicado (bronze → prata → ouro), que pode ser executado, testado e agendado de forma independente do Shiny.
+:::
+
+::: {.insight-box}
+### Indicadores de carregamento
+
+Gráficos, tabelas e o mapa agora exibem um indicador de carregamento enquanto os dados são recalculados após uma mudança de filtro, deixando mais claro quando o painel está processando uma atualização.
+:::
+
+::: {.insight-box}
+### Simplificação da navegação
+
+A aba de inspeção de dados brutos (Configurações) foi retirada do painel: a consulta aos dados de origem passou a ser feita diretamente sobre as camadas do pipeline, fora da aplicação.
+:::
+:::
+
 ## Tecnologias utilizadas
 
 <ul class="platform-list">
 <li>R e Shiny, com módulos <code>moduleServer()</code>/<code>NS()</code> organizados por aba.</li>
 <li><code>bslib</code> para o tema visual, <code>plotly</code> para gráficos interativos e <code>leaflet</code>/<code>sf</code> para os mapas.</li>
 <li><code>DT</code> para tabelas interativas e <code>dplyr</code>/<code>tidyverse</code> para tratamento dos dados.</li>
+<li><code>arrow</code> para ler e escrever os arquivos parquet das camadas prata e ouro do pipeline de dados.</li>
+<li><code>shinycssloaders</code> para os indicadores de carregamento dos gráficos, tabelas e mapa.</li>
 <li><code>deSolve</code> e <code>EpiDynamics</code> para os componentes de modelagem epidemiológica.</li>
 <li>Quarto para a documentação editorial do painel, como esta página Sobre.</li>
 </ul>

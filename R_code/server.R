@@ -11,6 +11,5 @@ server <- function(input, output, session) {
   comportamento_inicialServer("comportamento_inicial")
   calculadora_seirServer("calculadora")
   colaboradoresServer("colaboradores")
-  configuracoesServer("configuracoes")
   sobreServer("sobre")
 }

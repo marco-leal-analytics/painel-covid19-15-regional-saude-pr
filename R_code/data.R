@@ -49,10 +49,9 @@ data_list <- list("Casos por dia" = data_casos, "Incidências" = incidencias)
 ################################################################################################################
 ######################################## COMPATIBILIDADE COM TELAS/SCRIPTS LEGADOS #############################
 ################################################################################################################
-# `dataset1` e `dados2` reproduzem, a partir da camada ouro, as mesmas
-# estruturas linha-a-linha que R_code/legacy/source.R e
-# R_code/legacy/source3.R (curva epidemica por cidade, ranking de risco) e
-# a tela de Configuracoes esperam. A regra de negocio desses dois scripts
+# `dataset1` reproduz, a partir da camada ouro, a mesma estrutura linha-a-linha
+# que R_code/legacy/source.R e R_code/legacy/source3.R (curva epidemica por
+# cidade, ranking de risco) esperam. A regra de negocio desses dois scripts
 # nao foi alterada — apenas a origem dos dados, que deixou de ser o CSV
 # bruto e passou a ser o parquet da camada ouro.
 
@@ -67,20 +66,6 @@ dataset1 <- data.frame(
   coleta         = casos_detalhe$COLETA,
   resultadocovid = casos_detalhe$RESULTADOCOVID,
   atualizado     = NA_character_,
-  stringsAsFactors = FALSE
-)
-
-dados2 <- data.frame(
-  NOTIFICA       = casos_detalhe$NOTIFICA,
-  CIDADE         = casos_detalhe$CIDADE,
-  NOME           = casos_detalhe$NOME,
-  IDADE          = casos_detalhe$IDADE,
-  SEXO           = casos_detalhe$SEXO,
-  VIAJEM         = casos_detalhe$VIAJEM,
-  OBITO          = casos_detalhe$OBITO,
-  COLETA         = casos_detalhe$COLETA,
-  RESULTADOCOVID = casos_detalhe$RESULTADOCOVID,
-  ATUALIZADO     = casos_detalhe$ATUALIZADO,
   stringsAsFactors = FALSE
 )
 

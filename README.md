@@ -24,7 +24,6 @@ O projeto nasceu durante a pandemia para substituir a leitura manual de planilha
 - **Comportamento inicial**: simulacoes de como o atraso na adocao de medidas de mitigacao ou a chegada de pessoas expostas afeta o crescimento inicial da epidemia em uma cidade escolhida.
 - **Calculadora SEIR**: simulacao da evolucao da epidemia com o modelo SEIR (Suscetiveis-Expostos-Infectados-Recuperados), ajustando populacao, taxas de propagacao, incubacao, recuperacao e valores iniciais.
 - **Colaboradores**: equipe responsavel pelo acompanhamento epidemiologico da regional e pelo desenvolvimento estatistico e computacional do painel, em parceria com os departamentos de Estatistica e Matematica da UEM.
-- **Configuracoes**: consulta aos dados brutos e as tabelas de casos e populacao utilizadas pelo painel (disponivel apos login).
 - **Sobre**: pagina Quarto (`R_code/modules/sobre/sobre.qmd`) com o objetivo, o conteudo, a organizacao e o impacto do painel.
 
 ## Tecnologias
@@ -42,6 +41,7 @@ O projeto nasceu durante a pandemia para substituir a leitura manual de planilha
 - `brazilmaps` para limites geograficos dos municipios
 - `deSolve` e `EpiDynamics` para componentes de modelagem
 - `shinyWidgets`, `shinyjs` e `shinyBS` para controles e interacoes da interface
+- `shinycssloaders` para os indicadores de carregamento (`withSpinner()`) dos graficos, tabelas e do mapa
 - `ggplot2`, `gganimate` e `gifski` para visualizacoes e animacoes
 - `sass` para compilar as regras de tema definidas em `assets/sass/`
 - `renv` para reproducibilidade das dependencias
@@ -52,7 +52,7 @@ A lista completa, incluindo versoes resolvidas e dependencias transitivas, esta 
 
 O ponto de entrada e `app.R`. Ele define a raiz do projeto, ativa o `renv`, carrega os pacotes, prepara os dados, monta o tema `bslib`, carrega os modulos de interface e cria o objeto `shinyApp`.
 
-O projeto foi migrado de um `server.R` monolitico para modulos Shiny reais (`moduleServer()`/`NS()`), um por aba, cada um em sua propria pasta com `ui.R` e `server.R`. Os 8 modulos (`panorama_geral`, `mapa_cidades`, `nivel_risco`, `colaboradores`, `calculadora`, `comportamento_inicial`, `configuracoes` e `sobre`) ja seguem esse padrao. `R_code/server.R` continua existindo, mas hoje cuida apenas do login/navegacao e das chamadas `*Server(id)` de cada modulo - nao ha mais outputs soltos de aba nesse arquivo.
+O projeto foi migrado de um `server.R` monolitico para modulos Shiny reais (`moduleServer()`/`NS()`), um por aba, cada um em sua propria pasta com `ui.R` e `server.R`. Os 7 modulos (`panorama_geral`, `mapa_cidades`, `nivel_risco`, `colaboradores`, `calculadora`, `comportamento_inicial` e `sobre`) ja seguem esse padrao. Nao ha tela de login: todas as abas ficam sempre visiveis via `page_navbar(...)`. `R_code/server.R` continua existindo, mas hoje cuida apenas das chamadas `*Server(id)` de cada modulo - nao ha mais outputs soltos de aba nesse arquivo.
 
 ```text
 .
@@ -81,7 +81,6 @@ O projeto foi migrado de um `server.R` monolitico para modulos Shiny reais (`mod
 |   |   |-- nivel_risco/
 |   |   |-- colaboradores/
 |   |   |-- calculadora/
-|   |   |-- configuracoes/
 |   |   |-- comportamento_inicial/
 |   |   `-- sobre/                 # Pagina Quarto (sobre.qmd -> sobre.html), incorporada via iframe
 |   `-- legacy/                   # Scripts antigos ainda referenciados via source()
@@ -119,7 +118,7 @@ O projeto foi migrado de um `server.R` monolitico para modulos Shiny reais (`mod
 6. `R_code/data.R` le os parquets ja prontos em `data/gold/` (gerados previamente pelo pipeline em `pipeline/run_pipeline.R`) e monta os objetos analiticos e de mapa consumidos pelos modulos.
 7. Os arquivos de `R_code/modules/<nome>/{ui.R,server.R}` sao carregados aos pares - cada um define `<nome>UI(id)` e `<nome>Server(id)`.
 8. `R_code/ui.R` monta a interface principal com `fluidPage(theme = app_theme, ...)`.
-9. `R_code/server.R` chama `<nome>Server(id)` de cada modulo e monta o `tabsetPanel(id = 'navbar', <nome1>UI("id1"), ...)` com as UIs; tambem cuida de login, logout e da liberacao condicional da aba "Configuracoes" via `appendTab()`.
+9. `R_code/server.R` chama `<nome>Server(id)` de cada modulo, uma vez por aba; `R_code/ui.R` monta a navegacao com `page_navbar(..., nav_panel(...))`, com todas as abas sempre visiveis (nao ha login).
 10. `shinyApp(ui = ui, server = server)` inicia a aplicacao.
 
 > Nota sobre `source()` dentro de `server.R`: como o Shiny executa `app.R` em um ambiente proprio (nao o `.GlobalEnv`) e os `source()` internos de `app.R` avaliam o conteudo no `.GlobalEnv` por padrao, qualquer caminho de arquivo usado dentro de `server.R`/modulos deve ser construido com `getwd()` (jamais com a variavel `project_root`, que so existe no escopo do proprio `app.R`).
@@ -158,6 +157,102 @@ Rscript pipeline/run_pipeline.R
 
 O pipeline usa suas proprias funcoes de normalizacao (`pipeline/R/00_utils.R`) e nao depende de nada em `R_code/` — pode ser executado, testado e agendado (ex.: cron) de forma independente da aplicacao. `pipeline/R/01_silver.R` le os arquivos de `data/bronze/` (o `dataset.csv` esta em Latin-1/Windows-1252, nao UTF-8 — a leitura ja trata essa conversao) e `pipeline/R/02_gold.R` le `data/silver/` e escreve `data/gold/`.
 
+### `pipeline/R/00_utils.R` — utilitarios de normalizacao
+
+Funcoes puras, sem efeitos colaterais, reutilizadas por `01_silver.R` e `02_gold.R`:
+
+| Funcao | Entrada -> Saida | Uso |
+|---|---|---|
+| `rm_accent(str)` | string(s) com acento -> mesma string sem acento | Base para `normalize_key()`; troca vogais/consoantes acentuadas pela forma "nua" via `chartr()`. |
+| `normalize_key(x)` | string bruta -> `TOUPPER`, sem acento, sem espaco nas pontas | Chave de comparacao geral (ex.: nomes vindos de planilha). |
+| `compact_key(x)` | string bruta -> so letras `A-Z`, maiusculas, sem espaco/acento/pontuacao | Chave "compacta" no formato gravado pelo sistema de origem (ex.: `"doutorcamargo"`). |
+| `municipios_15_regional` | (constante) | Lista oficial dos 30 municipios da 15a Regional, em maiusculas com acento — mesma ordem usada nas planilhas de origem e mesmo formato usado por `R_code/constants.R` (`lista_cidade_upper`). |
+| `municipio_aliases` | (constante) | Abreviacoes conhecidas que a chave compacta nao resolve sozinha (hoje: `PCB -> PRESIDENTE CASTELO BRANCO`). |
+| `build_municipio_lookup()` | — -> vetor nomeado `chave_compacta -> nome canonico` | Combina `municipios_15_regional` + `municipio_aliases` num unico lookup. |
+| `resolve_municipio(x)` | token de cidade (raw) -> nome canonico com acento | Usa `build_municipio_lookup()`; tokens nao reconhecidos sao preservados (normalizados) em vez de descartados, para nao perder registros silenciosamente. |
+| `municipio_chave_app(nome_canonico)` | nome canonico -> chave compacta | Chave usada pelas telas do painel para identificar uma cidade (ex.: `"saojorgedoivai"`). |
+| `parse_data_br(x)` | string `dd/mm/aaaa` -> `Date` | Conversao de datas do formato brasileiro. |
+| `parse_idade(x)` | string de idade suja (ex.: `"57 anos"`) -> `numeric` | Extrai o primeiro token numerico do campo. |
+| `normalize_sexo(x)` | string livre -> `"M"`, `"F"` ou `NA` | Classifica pelo primeiro caractere (`^M`/`^F`), maiusculizado. |
+| `normalize_sim_nao(x)` | string livre -> `"SIM"`/`"NAO"` (maiusculas, sem espaco) | Usado para o campo de obito. |
+| `ensure_dir(path)` | caminho -> cria o diretorio se nao existir | Usado antes de escrever cada camada (`silver_dir`, `gold_dir`). |
+| `log_step(...)` | `sprintf(...)` -> mensagem com timestamp no console | Log padronizado de cada etapa do pipeline. |
+
+### `pipeline/R/01_silver.R` — `build_silver(bronze_dir, silver_dir)`
+
+1. Le `dataset.csv` (Latin-1/Windows-1252, separador `;`), `auxiliary/pop_municipios.xlsx` (aba `Planilha1`) e `auxiliary/latitude-longitude-bairros.csv` (UTF-8, separador `;`).
+2. Constroi a tabela `casos`: converte `notifica`/`coleta` com `parse_data_br()`, resolve `cidade` com `resolve_municipio()` + `municipio_chave_app()`, idade com `parse_idade()`, sexo com `normalize_sexo()`, obito com `normalize_sim_nao()`; quando falta `NOTIFICA`, usa a data de `COLETA` (mesma regra da aplicacao original). Grava `casos.parquet`.
+3. Separa a primeira linha da planilha de populacao (total "15 RS") do restante (`populacao_regional` x `populacao_municipios`), resolve o nome/chave de cada municipio e grava `populacao_municipios.parquet` e `populacao_regional.parquet`.
+4. Filtra os bairros do arquivo de coordenadas para `uf == "PR"` e municipios da 15a regional, resolve o nome do municipio e grava `bairros_15regional.parquet`.
+
+### `pipeline/R/02_gold.R` — `build_gold(silver_dir, gold_dir)`
+
+Le as quatro tabelas da camada prata e escreve as tabelas de consumo do painel: contagens diarias e por municipio (`casos_por_dia`), incidencia acumulada por milhao de habitantes (`incidencias`), distribuicao por faixa etaria isolada e cruzada com sexo (`faixa_etaria`, `faixa_etaria_sexo`), contagem por sexo (`casos_por_sexo`), obitos por municipio (`obitos_por_municipio`), um resumo por municipio com populacao/casos/obitos/incidencia final (`resumo_municipios`), a tabela de populacao no formato de exibicao (`populacao_municipios`), a copia da camada de bairros (`bairros_15regional`), o detalhe linha-a-linha de casos ja limpo (`casos_detalhe`, copia de `casos.parquet`) e uma linha de metadados (`metadados`) com data de atualizacao, id do video do YouTube, totais de casos/obitos por sexo e quantidade de cidades com casos.
+
+### Dicionario de dados — camada prata (`data/silver/`)
+
+**`casos.parquet`** (uma linha por caso notificado)
+
+| Coluna | Tipo | Descricao |
+|---|---|---|
+| `NOTIFICA` | `Date` | Data de notificacao do caso; quando ausente na origem, recebe a data de `COLETA`. |
+| `CIDADE` | `character` | Nome do municipio, forma canonica com acento (ex.: `"Doutor Camargo"`). |
+| `CIDADE_CHAVE` | `character` | Chave compacta do municipio (ex.: `"doutorcamargo"`), usada para join/filtro. |
+| `NOME` | `character` | Nome do paciente, sem espacos nas pontas. |
+| `IDADE` | `numeric` | Idade extraida do campo de origem (`parse_idade()`). |
+| `SEXO` | `character` | `"M"`, `"F"` ou `NA`. |
+| `VIAJEM` | `character` | Indicador de viagem, como gravado na origem. |
+| `OBITO` | `character` | `"SIM"`/`"NAO"` (padronizado). |
+| `COLETA` | `Date` | Data de coleta do exame. |
+| `RESULTADOCOVID` | `character` | Resultado do exame, sem espacos nas pontas. |
+| `ATUALIZADO` | `character` | Campo livre de origem; as duas primeiras linhas carregam, por convencao, a data de atualizacao do painel e o id do video do YouTube (ver `metadados` na camada ouro). |
+
+**`populacao_municipios.parquet`** (uma linha por municipio da regional)
+
+| Coluna | Tipo | Descricao |
+|---|---|---|
+| `MUNICIPIO_RAW` | `character` | Nome do municipio como veio da planilha de populacao. |
+| `MUNICIPIO_CHAVE` | `character` | Chave compacta do nome bruto (antes da resolucao). |
+| `POPULACAO` | `numeric` | Populacao do municipio. |
+| `CIDADE` | `character` | Nome canonico do municipio (`resolve_municipio()`). |
+| `CIDADE_CHAVE` | `character` | Chave compacta do nome canonico — usada para join com `casos`. |
+
+**`populacao_regional.parquet`** (uma linha, total da regional)
+
+| Coluna | Tipo | Descricao |
+|---|---|---|
+| `MUNICIPIO_RAW` | `character` | Rotulo do total (`"15 RS"`). |
+| `MUNICIPIO_CHAVE` | `character` | Chave compacta do rotulo. |
+| `POPULACAO` | `numeric` | Populacao total da 15a Regional de Saude. |
+
+**`bairros_15regional.parquet`** (uma linha por bairro)
+
+| Coluna | Tipo | Descricao |
+|---|---|---|
+| `municipio`, `uf`, ... | (colunas originais) | Todas as colunas do CSV de origem (`latitude-longitude-bairros.csv`), filtradas para `uf == "PR"` e municipios da 15a regional. |
+| `MUNICIPIO_CHAVE` | `character` | Chave compacta do campo `municipio` original. |
+| `CIDADE` | `character` | Nome canonico do municipio (`resolve_municipio()`). |
+
+### Dicionario de dados — camada ouro (`data/gold/`)
+
+Todas as tabelas "largas" abaixo (`casos_por_dia`, `incidencias`, `faixa_etaria`, `casos_por_sexo`, `obitos_por_municipio`) tem uma coluna por municipio da regional (os 30 nomes de `municipios_15_regional`), alem das colunas indicadas.
+
+| Tabela | Granularidade | Colunas principais |
+|---|---|---|
+| `casos_por_dia.parquet` | 1 linha por dia da serie | `label_datas` (`Date`); `REGIONAL` (`integer`, casos do dia na regional); uma coluna `integer` por municipio com os casos do dia. Base de `data_casos` em `R_code/data.R`. |
+| `incidencias.parquet` | 1 linha por dia da serie | `label_datas` (`Date`); `REGIONAL` (`numeric`, incidencia acumulada por milhao na regional); uma coluna `numeric` por municipio com a incidencia acumulada por milhao de habitantes. |
+| `faixa_etaria.parquet` | 1 linha por faixa etaria (`"0 - 09"`, `"10 - 18"`, `"19 - 40"`, `"41 - 60"`, `"61 - 80"`, `"81+"`) | `label_datas` (`character`, rotulo da faixa); `REGIONAL` (`integer`); uma coluna `integer` por municipio. |
+| `faixa_etaria_sexo.parquet` | 1 linha por combinacao faixa etaria x sexo | `faixa_etaria` (`factor`); `sexo` (`factor`: `"FEMININO"`/`"MASCULINO"`); `casos` (`integer`). |
+| `casos_por_sexo.parquet` | 2 linhas (`F`, `M`) | `REGIONAL` (`integer`, total na regional); uma coluna `integer` por municipio. `rownames` = sexo. |
+| `obitos_por_municipio.parquet` | 1 linha | Uma coluna `integer` por municipio com o total de obitos. |
+| `resumo_municipios.parquet` | 1 linha por municipio | `CIDADE` (`character`); `CIDADE_CHAVE` (`character`); `POPULACAO` (`numeric`); `CASOS` (`numeric`, total acumulado); `OBITOS` (`numeric`); `INCIDENCIA` (`numeric`, incidencia acumulada final por milhao). |
+| `populacao_municipios.parquet` | 1 linha por municipio + 1 linha do total regional | `Municipios` (`character`, `"15 RS"` na primeira linha, nome do municipio nas demais); `População` (`numeric`). |
+| `bairros_15regional.parquet` | 1 linha por bairro | Copia identica da tabela de mesmo nome da camada prata. |
+| `casos_detalhe.parquet` | 1 linha por caso notificado | Copia identica de `casos.parquet` da camada prata — usada para series sob demanda por municipio e pelas telas administrativas. |
+| `metadados.parquet` | 1 linha | `data_atualizacao_str` (`character`, `dd/mm/aaaa`); `video_id_youtube` (`character`); `data_inicio`/`data_fim_serie` (`Date`); `total_casos` (`integer`); `total_obitos` (`integer`); `obitos_feminino`/`obitos_masculino` (`integer`); `qtd_cidades_com_casos` (`integer`). |
+
+`R_code/data.R` le cada uma dessas tabelas (funcao `gold(nome)`) e monta os objetos consumidos pelos modulos (`data_casos`, `incidencias`, `faixa_etaria`, `faixa_etaria_sexo`, `casos_sexo`, `obitos_mun`, `resumo_municipios`, `populacao_municipio`, `metadados`, `qtd_cidade`, `data_fim`, `link`, `obitos`, `obitos_sexo`, `dataset1`), alem de combinar `resumo_municipios` com a geometria de `brazilmaps` para montar o mapa Leaflet.
+
 ### Fontes de dados (lidas apenas pelo pipeline)
 
 - `data/bronze/dataset.csv`: dataset principal de casos notificados. Separador `;`, codificacao Latin-1/Windows-1252, campos como municipio, datas, sexo, idade, viagem, obito e resultado do exame.
@@ -170,7 +265,7 @@ Para atualizar os dados, substitua os arquivos em `data/bronze/` mantendo nomes,
 
 ## Modulos do painel
 
-Todos os 8 modulos seguem o padrao `moduleServer()`/`NS()`, cada um em `R_code/modules/<nome>/{ui.R,server.R}`.
+Todos os 7 modulos seguem o padrao `moduleServer()`/`NS()`, cada um em `R_code/modules/<nome>/{ui.R,server.R}`. O modulo `configuracoes` (consulta aos dados brutos) foi removido do projeto: a inspecao dos dados de origem passou a ser feita diretamente sobre as camadas do pipeline (`data/silver/`, `data/gold/`), fora da aplicacao.
 
 | Modulo | Na navegacao? | Descricao |
 |---|---|---|
@@ -179,13 +274,10 @@ Todos os 8 modulos seguem o padrao `moduleServer()`/`NS()`, cada um em `R_code/m
 | **Nivel de risco** (`nivel_risco`) | Sim | Rankings por risco estimado, data de referencia e escala linear ou logaritmica; modal de ajuda com video (`showModal`/`modalDialog`). |
 | **Colaboradores** (`colaboradores`) | Sim | Informacoes institucionais das equipes participantes. Aba puramente estatica - `colaboradoresServer()` nao tem outputs proprios. |
 | **Sobre** (`sobre`) | Sim | Objetivo, conteudo, organizacao e impacto do painel. Pagina Quarto estatica (`sobre.qmd` renderizado para `sobre.html`), incorporada via `iframe`; `sobreServer()` nao tem outputs proprios. |
-| **Configuracoes** (`configuracoes`) | Condicional | Consulta dos dados brutos, tabelas de casos e populacao. So aparece apos login do usuario `mleal`, via `appendTab(inputId = "navbar", configuracoesUI("configuracoes"))` dentro do `observeEvent(input$login)` em `R_code/server.R`. |
-| **Calculadora SEIR** (`calculadora`) | Nao | Controles para populacao, periodo, taxas e estados iniciais do modelo. Modulo funcional, mas a referencia em `R_code/ui.R` (dentro do objeto `mais`) esta comentada. |
-| **Comportamento inicial** (`comportamento_inicial`) | Nao | Estimativas de atraso nas medidas de mitigacao e chegada de expostos, por cidade. Mesmo status do `calculadora`: funcional, porem fora da navegacao (referencia comentada em `mais`). |
+| **Comportamento inicial** (`comportamento_inicial`) | Sim | Estimativas de atraso nas medidas de mitigacao e chegada de expostos, por cidade. |
+| **Calculadora SEIR** (`calculadora`) | Sim | Controles para populacao, periodo, taxas e estados iniciais do modelo. |
 
-Cada `ui.R` expoe uma funcao `<nome>UI(id)` (usada em `R_code/server.R` dentro do `tabsetPanel(id = 'navbar', ...)`, ou via `appendTab()` no caso de `configuracoes`) e cada `server.R` expoe `<nome>Server(id)` (chamada uma vez dentro de `server <- function(input, output, session) {...}`). O `mapa_cidades` tem uma peculiaridade: o painel exibido no modal ao clicar numa cidade vem de uma segunda funcao, `mapa_cidades_panelUI(id)`, chamada a partir do proprio `server.R` do modulo (e nao do `ui.R` principal), pois o conteudo do modal e montado dinamicamente no clique.
-
-Para religar `calculadora`/`comportamento_inicial` na navegacao: descomente as chamadas correspondentes (`calculadora_seirUI("calculadora")` / `comportamento_inicialUI("comportamento_inicial")`) dentro do objeto `mais` em `R_code/ui.R`, e garanta que os respectivos `*Server(id)` (ja chamados em `R_code/server.R`) usem o mesmo `id` passado na UI.
+Cada `ui.R` expoe uma funcao `<nome>UI(id)` (usada em `R_code/ui.R` dentro do `page_navbar(..., nav_panel(...))`) e cada `server.R` expoe `<nome>Server(id)` (chamada uma vez dentro de `server <- function(input, output, session) {...}` em `R_code/server.R`). O `mapa_cidades` tem uma peculiaridade: o painel exibido no modal ao clicar numa cidade vem de uma segunda funcao, `mapa_cidades_panelUI(id)`, chamada a partir do proprio `server.R` do modulo (e nao do `ui.R` principal), pois o conteudo do modal e montado dinamicamente no clique.
 
 ## Padroes de UI e graficos
 
@@ -230,7 +322,7 @@ Antes de abrir uma alteracao:
 4. Ao criar ou alterar um modulo: use `box_card()` (helper compartilhado em `R_code/constants.R`) em vez de `shinydashboard::box()`, namespaced todo `*Output(...)`/`inputId` com `ns()` no `ui.R`, use `getwd()` (nunca `project_root`) em qualquer `source()` interno ao `server.R` do modulo, e **nao use `shinyBS::bsModal()`/`toggleModal()`** - use `shiny::showModal(shiny::modalDialog(...))`, disparado por um `observeEvent()` no botao (veja `nivel_risco` como referencia).
 5. Nao baixe a versao do `bs_theme()` em `R_code/theme.R` para resolver algum componente legado quebrado - `bslib::card()` exige Bootstrap 5+. Troque o componente incompativel por um equivalente nativo do Shiny em vez de mexer na versao do tema.
 6. Execute `renv::status()` para verificar as dependencias.
-7. Inicie o Shiny e teste as abas, filtros, tabelas, mapas, modais e autenticacao afetados.
+7. Inicie o Shiny e teste as abas, filtros, tabelas, mapas e modais afetados.
 8. Evite colocar datasets, scripts R ou artefatos gerados em `www/` ou `assets/`.
 9. Ao editar `R_code/modules/sobre/sobre.qmd`, renderize o documento (`quarto render sobre.qmd` dentro de `R_code/modules/sobre/`) para atualizar `sobre.html` - o modulo `sobre` serve o HTML pre-renderizado via `iframe`, entao alteracoes no `.qmd` sozinhas nao aparecem na aplicacao.
 10. Siga os padroes de UI e graficos descritos na secao "Padroes de UI e graficos" (centralizacao via `.module-shell`, legenda centralizada no topo via `dark_plotly()`, estilo do modal por cidade) ao adicionar novas abas, graficos ou modais.
@@ -241,8 +333,7 @@ A estrutura reorganizada foi validada com:
 
 - parse (`parse()`) de todos os arquivos R do bootstrap, do tema e dos modulos;
 - inicializacao real do servidor Shiny (`shiny::runApp`) e requisicao HTTP local com resposta `200`, confirmando que o bundle servido e Bootstrap 5 (`bootstrap-5.x.x/bootstrap.min.css`);
-- testes isolados de UI e servidor com `shiny::testServer()` para cada um dos 7 modulos, incluindo: cliques simulados no mapa (cidade com e sem dados de viagem), troca de escala Linear/Logaritmica e do gatilho de ajuda no ranking de risco, troca das 3 opcoes de dados em Configuracoes, e o modelo SEIR com valores reais de entrada;
-- teste do fluxo de login completo (`shiny::testServer(server, {...})` com as credenciais reais do usuario `mleal`), validando o `appendTab()` que libera a aba Configuracoes;
+- testes isolados de UI e servidor com `shiny::testServer()` para os modulos, incluindo: cliques simulados no mapa (cidade com e sem dados de viagem), troca de escala Linear/Logaritmica e do gatilho de ajuda no ranking de risco, e o modelo SEIR com valores reais de entrada;
 - verificacao de consistencia do ambiente `renv`.
 
 Durante a inicializacao podem aparecer avisos de pacotes carregados previamente pelo ambiente local do R e avisos de deprecacao de componentes visuais. Eles nao impedem a execucao do painel.

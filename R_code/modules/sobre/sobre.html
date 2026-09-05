@@ -175,18 +175,39 @@ O painel foi criado durante a pandemia para responder a uma necessidade concreta
 </section>
 <section id="origem-e-tratamento-dos-dados" class="level2">
 <h2 class="anchored" data-anchor-id="origem-e-tratamento-dos-dados">Origem e tratamento dos dados</h2>
+<section id="pipeline-de-dados-em-camadas-bronze-prata-ouro" class="level3 insight-box">
+<h3 class="anchored" data-anchor-id="pipeline-de-dados-em-camadas-bronze-prata-ouro">Pipeline de dados em camadas (bronze → prata → ouro)</h3>
+<p>A limpeza e a agregação dos dados agora acontecem fora da aplicação, em um pipeline próprio (<code>pipeline/</code>) organizado no padrão <em>medallion</em>: a camada <strong>bronze</strong> guarda os arquivos brutos como chegam da fonte; a camada <strong>prata</strong> normaliza nomes de município, datas, sexo e idade e cruza os registros de casos com a base de população; a camada <strong>ouro</strong> produz as tabelas agregadas (casos por dia, incidência, faixa etária, óbitos, ranking por município) que o painel lê diretamente. A aplicação nunca mais abre planilha ou CSV bruto — apenas os arquivos já tratados da camada ouro.</p>
+</section>
 <div class="insight-grid">
 <section id="registros-municipais" class="level3 insight-box">
 <h3 class="anchored" data-anchor-id="registros-municipais">Registros municipais</h3>
-<p>Os dados de casos, óbitos e população dos municípios da 15ª Regional de Saúde são consolidados e disponibilizados para consulta na aba Configurações.</p>
+<p>Os dados de casos, óbitos e população dos municípios da 15ª Regional de Saúde são consolidados pelo pipeline e servem de base para todos os indicadores do painel.</p>
 </section>
 <section id="indicadores-calculados" class="level3 insight-box">
 <h3 class="anchored" data-anchor-id="indicadores-calculados">Indicadores calculados</h3>
-<p>Casos por dia, casos acumulados e incidência por milhão de habitantes são derivados dos registros brutos para permitir comparações entre municípios e ao longo do tempo.</p>
+<p>Casos por dia, casos acumulados e incidência por milhão de habitantes são derivados dos registros tratados para permitir comparações entre municípios e ao longo do tempo.</p>
 </section>
 <section id="modelagem-epidemiológica" class="level3 insight-box">
 <h3 class="anchored" data-anchor-id="modelagem-epidemiológica">Modelagem epidemiológica</h3>
 <p>O nível de risco, o comportamento inicial e a calculadora SEIR usam modelos estatísticos e matemáticos para estimar cenários de propagação, não substituindo a vigilância epidemiológica oficial.</p>
+</section>
+</div>
+</section>
+<section id="atualizações-recentes" class="level2">
+<h2 class="anchored" data-anchor-id="atualizações-recentes">Atualizações recentes</h2>
+<div class="insight-grid">
+<section id="pipeline-de-dados-independente" class="level3 insight-box">
+<h3 class="anchored" data-anchor-id="pipeline-de-dados-independente">Pipeline de dados independente</h3>
+<p>A ingestão, limpeza e agregação dos dados foram extraídas da aplicação para um pipeline dedicado (bronze → prata → ouro), que pode ser executado, testado e agendado de forma independente do Shiny.</p>
+</section>
+<section id="indicadores-de-carregamento" class="level3 insight-box">
+<h3 class="anchored" data-anchor-id="indicadores-de-carregamento">Indicadores de carregamento</h3>
+<p>Gráficos, tabelas e o mapa agora exibem um indicador de carregamento enquanto os dados são recalculados após uma mudança de filtro, deixando mais claro quando o painel está processando uma atualização.</p>
+</section>
+<section id="simplificação-da-navegação" class="level3 insight-box">
+<h3 class="anchored" data-anchor-id="simplificação-da-navegação">Simplificação da navegação</h3>
+<p>A aba de inspeção de dados brutos (Configurações) foi retirada do painel: a consulta aos dados de origem passou a ser feita diretamente sobre as camadas do pipeline, fora da aplicação.</p>
 </section>
 </div>
 </section>
@@ -201,6 +222,12 @@ R e Shiny, com módulos <code>moduleServer()</code>/<code>NS()</code> organizado
 </li>
 <li>
 <code>DT</code> para tabelas interativas e <code>dplyr</code>/<code>tidyverse</code> para tratamento dos dados.
+</li>
+<li>
+<code>arrow</code> para ler e escrever os arquivos parquet das camadas prata e ouro do pipeline de dados.
+</li>
+<li>
+<code>shinycssloaders</code> para os indicadores de carregamento dos gráficos, tabelas e mapa.
 </li>
 <li>
 <code>deSolve</code> e <code>EpiDynamics</code> para os componentes de modelagem epidemiológica.

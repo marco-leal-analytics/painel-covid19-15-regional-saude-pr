@@ -36,6 +36,5 @@ ui <- page_navbar(
   nav_panel("Comportamento Inicial", tags$div(class = "module-shell", comportamento_inicialUI("comportamento_inicial"))),
   nav_panel("Calculadora SEIR", tags$div(class = "module-shell", calculadora_seirUI("calculadora"))),
   nav_panel("Colaboradores", tags$div(class = "module-shell", colaboradoresUI("colaboradores"))),
-  nav_panel("Configurações", tags$div(class = "module-shell", configuracoesUI("configuracoes"))),
   nav_panel("Sobre", sobreUI("sobre"))
 )
