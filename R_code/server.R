@@ -7,6 +7,7 @@ server <- function(input, output, session) {
   panorama_geralServer("panorama")
   mapa_cidadesServer("mapa")
   nivel_riscoServer("nivel_risco")
+  colaboradoresServer("colaboradores")
 
   
   #####################################################################################################################
@@ -79,7 +80,7 @@ server <- function(input, output, session) {
                         panorama_geralUI("panorama"),
                         mapa_cidadesUI("mapa"),
                         nivel_riscoUI("nivel_risco"),
-                        colaboradores,
+                        colaboradoresUI("colaboradores"),
                         mais
                         )
             ),
