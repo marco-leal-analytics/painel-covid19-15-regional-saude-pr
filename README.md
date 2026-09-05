@@ -18,8 +18,8 @@ O projeto nasceu durante a pandemia para substituir a leitura manual de planilha
 
 ## O que pode ser encontrado
 
-- **Painel Geral**: indicadores consolidados de casos confirmados e obitos, distribuicao por sexo e por faixa etaria, evolucao diaria e acumulada de casos, incidencia por milhao de habitantes e comparativo entre municipios.
-- **Mapa de cidades**: mapa interativo (Leaflet) com os casos confirmados por municipio; ao clicar em uma cidade abre um painel detalhado com serie historica, incidencia, faixa etaria e indicadores de viagem.
+- **Painel Geral**: indicadores consolidados de casos confirmados e obitos (incluindo KPIs separados por sexo), distribuicao por sexo e por faixa etaria (isolada e cruzada faixa etaria x sexo), casos confirmados por dia com media movel de 7 dias, evolucao acumulada de casos, incidencia por milhao de habitantes e comparativo entre municipios.
+- **Mapa de cidades**: mapa interativo (Leaflet) com os casos confirmados por municipio; ao clicar em uma cidade abre um modal detalhado com serie historica, casos por dia (com media movel de 7 dias), incidencia, faixa etaria e indicadores de viagem.
 - **Nivel de risco**: ranking dos municipios segundo o risco estimado de aumento de casos, calculado a partir da prevalencia das infeccoes, da taxa de propagacao estimada e do tamanho da populacao.
 - **Comportamento inicial**: simulacoes de como o atraso na adocao de medidas de mitigacao ou a chegada de pessoas expostas afeta o crescimento inicial da epidemia em uma cidade escolhida.
 - **Calculadora SEIR**: simulacao da evolucao da epidemia com o modelo SEIR (Suscetiveis-Expostos-Infectados-Recuperados), ajustando populacao, taxas de propagacao, incubacao, recuperacao e valores iniciais.
@@ -153,6 +153,12 @@ Cada `ui.R` expoe uma funcao `<nome>UI(id)` (usada em `R_code/server.R` dentro d
 
 Para religar `calculadora`/`comportamento_inicial` na navegacao: descomente as chamadas correspondentes (`calculadora_seirUI("calculadora")` / `comportamento_inicialUI("comportamento_inicial")`) dentro do objeto `mais` em `R_code/ui.R`, e garanta que os respectivos `*Server(id)` (ja chamados em `R_code/server.R`) usem o mesmo `id` passado na UI.
 
+## Padroes de UI e graficos
+
+- **Centralizacao das paginas**: cada `nav_panel(...)` em `R_code/ui.R` envolve a UI do modulo em `tags$div(class = "module-shell", ...)` (exceto `Sobre`, que gerencia seu proprio layout full-bleed via iframe). A classe `.module-shell` (definida em `assets/css/app.css`) limita a largura do conteudo a `--mla-max` (1180px) e centraliza na pagina - use o mesmo padrao ao adicionar um novo `nav_panel`.
+- **Legendas dos graficos**: `dark_plotly()` (helper compartilhado em `R_code/components.R`, aplicado ao final de todo `renderPlotly` do projeto) fixa a legenda como horizontal e centralizada no topo do grafico (`orientation = "h"`, `x = 0.5, xanchor = "center"`, `y = 1.15, yanchor = "bottom"`). Como e aplicado por ultimo, sobrescreve qualquer `legend` definida antes no `layout()` do grafico - novos graficos herdam o padrao automaticamente ao encadear `%>% dark_plotly()`.
+- **Modal por cidade (`mapa_cidades`)**: o painel exibido via `shinyWidgets::show_alert()` usa a classe `.mla-modal-panel` (ver `mapa_cidades_panelUI()`), com CSS proprio em `assets/css/app.css` para o tamanho e as cores do popup. O SweetAlert2 define `width`/tamanho via estilo inline por JavaScript depois que o CSS da pagina e lido, entao essas regras usam seletores compostos (`body .swal2-container .swal2-popup.swal2-popup`) e `!important` para vencer esse estilo inline - ajustes de tamanho/cor do modal devem seguir o mesmo padrao. O titulo do modal (`.mla-modal-panel h3`) fica em um "pill" branco com texto preto para garantir contraste independente do fundo escuro do popup.
+
 ## Instalacao e execucao
 
 Na raiz do projeto, execute no R ou RStudio:
@@ -191,6 +197,7 @@ Antes de abrir uma alteracao:
 7. Inicie o Shiny e teste as abas, filtros, tabelas, mapas, modais e autenticacao afetados.
 8. Evite colocar datasets, scripts R ou artefatos gerados em `www/` ou `assets/`.
 9. Ao editar `R_code/modules/sobre/sobre.qmd`, renderize o documento (`quarto render sobre.qmd` dentro de `R_code/modules/sobre/`) para atualizar `sobre.html` - o modulo `sobre` serve o HTML pre-renderizado via `iframe`, entao alteracoes no `.qmd` sozinhas nao aparecem na aplicacao.
+10. Siga os padroes de UI e graficos descritos na secao "Padroes de UI e graficos" (centralizacao via `.module-shell`, legenda centralizada no topo via `dark_plotly()`, estilo do modal por cidade) ao adicionar novas abas, graficos ou modais.
 
 ## Validacao atual
 
