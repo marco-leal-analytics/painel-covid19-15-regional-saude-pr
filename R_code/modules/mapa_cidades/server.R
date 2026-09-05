@@ -110,7 +110,7 @@ mapa_cidadesServer <- function(id) {
           showCloseButton = TRUE,
           text = fluidRow(column(width=12, mapa_cidades_panelUI(id))),
           html = TRUE,
-          width = "95%")
+          width = "80%")
       }
 
     })
@@ -157,7 +157,7 @@ mapa_cidadesServer <- function(id) {
           pos_reg <- which(stack_casos$ind == "REGIONAL")
           stack_casos <- stack_casos[c(which(stack_casos$ind == message)),]
 
-          fig<-plot_ly(x = ~ stack_casos$label, y = ~ cumsum(stack_casos$values),height=340, mode = 'lines+markers',
+          fig<-plot_ly(x = ~ stack_casos$label, y = ~ cumsum(stack_casos$values),height=460, mode = 'lines+markers',
                        type="scatter",
                        text = "", marker=list(color = mla_palette[1], size=9, opacity=0.75),
                        line = list(color = mla_palette[1], width = 4,opacity= 0.75))
@@ -195,8 +195,14 @@ mapa_cidadesServer <- function(id) {
           pos_reg <- which(stack_casos$ind == "REGIONAL")
           stack_casos <- stack_casos[c(which(stack_casos$ind == message)),]
 
-          fig<-plot_ly(x = ~ stack_casos$label, y = ~ stack_casos$values, type="bar",height= 340,
-                       text = "", marker=list(color = mla_palette[2], size=10, opacity=0.75))
+          media_movel_7d <- as.numeric(stats::filter(data_casos[[message]], filter = rep(1 / 7, 7), sides = 1))
+
+          fig<-plot_ly(x = ~ stack_casos$label, y = ~ stack_casos$values, type="bar",height= 460,
+                       text = "", marker=list(color = mla_palette[2], size=10, opacity=0.75),
+                       name = "Casos confirmados")
+          fig <- fig %>% add_trace(x = ~ data_casos$label_datas, y = ~ media_movel_7d, type = "scatter",
+                                   mode = "lines", line = list(color = mla_palette[5], width = 3),
+                                   marker = NULL, name = "Média móvel (7 dias)")
           fig <- fig %>% layout(hovermode = TRUE, spikedistance =  -1,
                                 xaxis = list(title = "<b>DATAS</b>", showspikes = TRUE, titlefont = list(size = 24),
                                              spikemode  = 'across', #toaxis, across, marker
@@ -235,7 +241,7 @@ mapa_cidadesServer <- function(id) {
 
 
 
-          fig<-plot_ly(x = ~ stack_incidencias[,1], y = ~ stack_incidencias[,2], mode = 'lines+markers', type="scatter",height= 340,
+          fig<-plot_ly(x = ~ stack_incidencias[,1], y = ~ stack_incidencias[,2], mode = 'lines+markers', type="scatter",height= 460,
                        text = "", marker=list(color = mla_palette[1], size=9, opacity=0.75),
                        line = list(color = mla_palette[1], width = 4,opacity= 0.75), name = colnames(stack_incidencias)[2]) %>%
             add_trace(y = ~stack_incidencias[,3], name = colnames(stack_incidencias)[3], line = list(color = mla_palette[5], width = 4),
@@ -274,7 +280,7 @@ mapa_cidadesServer <- function(id) {
           y          <- faixa_etaria[,message];y
 
 
-          fig<-plot_ly( y = ~ x, x = ~ y, type="bar",orientation = 'h',height= 340,
+          fig<-plot_ly( y = ~ x, x = ~ y, type="bar",orientation = 'h',height= 460,
                         text = "", marker=list(color = mla_palette[2], size=10, opacity=0.75),
                         name = 'Suscetíveis')
           fig <- fig %>% layout(hovermode = TRUE, spikedistance =  -1,
@@ -548,7 +554,7 @@ mapa_cidadesServer <- function(id) {
                                                 spikesnap = 'cursor', zeroline=FALSE,titlefont = list(size = 24),
                                                 showline=TRUE,tickfont = list(size = 24),fixedrange=TRUE,
                                                 showgrid=TRUE),
-                                  height= 340,
+                                  height= 460,
                                   plot_bgcolor  = "rgba(0, 0, 0, 0)",
                                   paper_bgcolor = "rgba(0, 0, 0, 0)",
                                   fig_bgcolor   = "rgba(0, 0, 0, 0)") %>%
@@ -723,7 +729,7 @@ mapa_cidadesServer <- function(id) {
                                                 spikesnap = 'cursor', zeroline=FALSE,titlefont = list(size = 24),
                                                 showline=TRUE,tickfont = list(size = 24),fixedrange=TRUE,
                                                 showgrid=TRUE),
-                                  height= 340,
+                                  height= 460,
                                   plot_bgcolor  = "rgba(0, 0, 0, 0)",
                                   paper_bgcolor = "rgba(0, 0, 0, 0)",
                                   fig_bgcolor   = "rgba(0, 0, 0, 0)") %>%

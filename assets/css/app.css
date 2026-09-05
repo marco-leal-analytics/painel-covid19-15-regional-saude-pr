@@ -239,15 +239,45 @@ tbody tr:last-child td { border-bottom: 0; }
 .py-4 { padding-top: var(--mla-space-4); padding-bottom: var(--mla-space-4); }
 .no-wrap { white-space: normal; }
 
-/* Modal por cidade (mapa de cidades) - evita barra de rolagem: limita a altura
-   do popup do SweetAlert e mantém os gráficos/cards dentro do espaço visível. */
-.swal2-popup { max-height: 92vh; padding: var(--mla-space-4) var(--mla-space-5); }
-.swal2-html-container { max-height: calc(92vh - 6rem); margin: 0 !important; overflow-y: auto; overflow-x: hidden; }
+/* Modal por cidade (mapa de cidades) - evita barra de rolagem e mantém uma
+   proporção legível (nem achatado, nem sem contraste). O SweetAlert2 define
+   width/height via JS (inline style) depois que o CSS é lido, então usamos
+   seletores compostos (mais específicos que os dele) + !important em tudo
+   que precisa vencer esse estilo inline. */
+body .swal2-container .swal2-popup.swal2-popup {
+  width: min(70vw, 900px) !important;
+  min-height: min(82vh, 760px) !important;
+  max-height: 92vh !important;
+  padding: var(--mla-space-5) var(--mla-space-6) !important;
+  background: var(--mla-surface) !important;
+  color: var(--mla-text) !important;
+  border: 1px solid var(--mla-border);
+  border-radius: var(--mla-radius-lg);
+  box-shadow: var(--mla-shadow-lg);
+}
+body .swal2-container .swal2-html-container {
+  max-height: calc(92vh - 6rem) !important;
+  margin: 0 !important;
+  overflow-y: auto;
+  overflow-x: hidden;
+  color: var(--mla-text) !important;
+}
+body .swal2-container .swal2-close { color: var(--mla-text) !important; }
 .mla-modal-panel { width: 100%; }
 .mla-modal-panel .card { margin-bottom: 0; }
 .mla-modal-panel .card-body { padding: var(--mla-space-3) var(--mla-space-4); }
 .mla-modal-panel .kpi-grid { margin: var(--mla-space-3) 0; }
-.mla-modal-panel h3 { margin: 0 0 var(--mla-space-3); font-size: var(--mla-text-xl); }
+.mla-modal-panel h3 {
+  margin: 0 0 var(--mla-space-4);
+  padding: var(--mla-space-2) var(--mla-space-4);
+  display: inline-block;
+  background: #FFFFFF !important;
+  border-radius: var(--mla-radius-pill);
+}
+.mla-modal-panel h3, .mla-modal-panel h3 strong {
+  color: #000000 !important;
+  font-size: var(--mla-text-xl);
+}
 
 @media (max-width: 900px) {
   .mla-hero { grid-template-columns: 1fr; }

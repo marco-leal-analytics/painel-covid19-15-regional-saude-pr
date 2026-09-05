@@ -69,7 +69,7 @@ dark_plotly <- function(fig) {
     font  = list(color = "#E6EEF8", family = "Inter, sans-serif"),
     xaxis = list(gridcolor = "rgba(230,238,248,.12)", zerolinecolor = "rgba(230,238,248,.18)", linecolor = "rgba(230,238,248,.25)"),
     yaxis = list(gridcolor = "rgba(230,238,248,.12)", zerolinecolor = "rgba(230,238,248,.18)", linecolor = "rgba(230,238,248,.25)"),
-    legend = list(font = list(color = "#E6EEF8"))
+    legend = list(orientation = "h", x = 0.5, xanchor = "center", y = 1.15, yanchor = "bottom", font = list(color = "#E6EEF8"))
   )
 }
 
