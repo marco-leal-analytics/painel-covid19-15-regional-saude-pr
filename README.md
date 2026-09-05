@@ -85,17 +85,17 @@ O projeto foi migrado de um `server.R` monolitico para modulos Shiny reais (`mod
 |   |   `-- sobre/                 # Pagina Quarto (sobre.qmd -> sobre.html), incorporada via iframe
 |   `-- legacy/                   # Scripts antigos ainda referenciados via source()
 |-- data/
-|   |-- bronze/                  # Camada bronze: arquivos brutos no formato original (fonte)
-|   |   |-- dataset.csv          # Dataset principal (lido apenas pelo pipeline)
-|   |   |-- dataset2.csv         # Dataset historico/alternativo (nao usado pelo pipeline/painel)
-|   |   |-- obitos.csv           # Base auxiliar de obitos (nao usada pelo pipeline/painel)
+|   |-- bronze/                  # Camada bronze: NAO versionada (.gitignore) nem distribuida com o projeto
+|   |   |-- dataset.csv          # Dataset principal (lido apenas pelo pipeline) - so existe localmente
+|   |   |-- dataset2.csv         # Dataset historico/alternativo (nao usado pelo pipeline/painel) - so existe localmente
+|   |   |-- obitos.csv           # Base auxiliar de obitos (nao usada pelo pipeline/painel) - so existe localmente
 |   |   `-- auxiliary/
-|   |       |-- pop_municipios.xlsx  # Populacao usada na incidencia (lida apenas pelo pipeline)
-|   |       |-- latitude-longitude-bairros.csv
-|   |       |-- table.RData
-|   |       `-- F4993300
-|   |-- silver/                  # Camada prata: dados limpos/unificados em parquet
-|   `-- gold/                    # Camada ouro: dados agregados prontos para o painel (o que app.R le)
+|   |       |-- pop_municipios.xlsx  # Populacao usada na incidencia (lida apenas pelo pipeline) - so existe localmente
+|   |       |-- latitude-longitude-bairros.csv       # so existe localmente
+|   |       |-- table.RData                          # so existe localmente
+|   |       `-- F4993300                             # so existe localmente
+|   |-- silver/                  # Camada prata: dados limpos/unificados em parquet (versionada, dado pessoal ja removido)
+|   `-- gold/                    # Camada ouro: dados agregados prontos para o painel (o que app.R le; versionada, dado pessoal ja removido)
 |-- www/                         # Recursos publicados pelo Shiny na raiz (/)
 |   |-- styles.css, custom.css
 |   |-- code.js
@@ -131,21 +131,23 @@ Os dados nao sao mais armazenados em `www/`. Essa pasta e reservada a arquivos q
 
 A leitura, limpeza e agregacao dos dados brutos acontecem **fora da aplicacao**, em um pipeline de dados no formato medallion (`pipeline/`), totalmente independente do Shiny. `R_code/data.R` nunca le `dataset.csv`, o `.xlsx` ou o `.csv` de bairros diretamente — ele so le os arquivos parquet ja prontos em `data/gold/`.
 
+> **`data/bronze/` nao faz parte do projeto sincronizado.** Essa pasta contem os arquivos brutos originais da fonte, com dado pessoal de paciente, e esta no `.gitignore` — ela existe apenas na maquina de quem roda o pipeline localmente, nunca e commitada nem distribuida junto com o repositorio. Quem clona o projeto **nao recebe** `data/bronze/`; precisa fornecer os proprios arquivos brutos (mesmos nomes/colunas/formato, ver "Fontes de dados" abaixo) para poder rodar `Rscript pipeline/run_pipeline.R`. As camadas `data/silver/` e `data/gold/` continuam versionadas no repositorio, e os dados nelas foram levemente descaracterizados antes de serem commitados (ver "Privacidade e dados sensiveis" abaixo) — quem so consome o painel (sem rodar o pipeline) usa exatamente essas camadas ja incluidas no repositorio.
+
 ### Pipeline de dados (`pipeline/`)
 
 ```
-data/bronze/dataset.csv                            (dado bruto, pousado, formato original)
+data/bronze/dataset.csv                            (dado bruto, pousado, formato original - so local, nao versionado)
 data/bronze/auxiliary/*.xlsx|csv
         │  Rscript pipeline/run_pipeline.R
         ▼
-data/silver/*.parquet   -> limpeza, tipagem e unificacao (nomes de cidade, datas, sexo, idade)
+data/silver/*.parquet   -> limpeza, tipagem, unificacao e descaracterizacao leve (ver nota de privacidade)
         ▼
 data/gold/*.parquet     -> agregados prontos para consumo (o que R_code/data.R le)
 ```
 
-- **Bronze** (`data/bronze/`): os arquivos brutos em si, no formato original da fonte (`dataset.csv`, `auxiliary/pop_municipios.xlsx`, `auxiliary/latitude-longitude-bairros.csv`) — nenhuma transformacao, e o pipeline so os le, nunca os gera.
-- **Prata** (`data/silver/`): `casos.parquet`, `populacao_municipios.parquet`, `populacao_regional.parquet`, `bairros_15regional.parquet` — nomes de municipio normalizados (acentos/abreviacoes/espacos), datas convertidas, sexo/idade/obito padronizados.
-- **Ouro** (`data/gold/`): tabelas prontas para o painel — `metadados`, `casos_detalhe`, `casos_por_dia`, `incidencias`, `faixa_etaria`, `faixa_etaria_sexo`, `casos_por_sexo`, `obitos_por_municipio`, `resumo_municipios`, `populacao_municipios`, `bairros_15regional`.
+- **Bronze** (`data/bronze/`): os arquivos brutos em si, no formato original da fonte (`dataset.csv`, `auxiliary/pop_municipios.xlsx`, `auxiliary/latitude-longitude-bairros.csv`) — nenhuma transformacao, e o pipeline so os le, nunca os gera. **Nao e versionada nem sincronizada com o repositorio** (`.gitignore`); existe apenas localmente em cada ambiente que roda o pipeline.
+- **Prata** (`data/silver/`): `casos.parquet`, `populacao_municipios.parquet`, `populacao_regional.parquet`, `bairros_15regional.parquet` — nomes de municipio normalizados (acentos/abreviacoes/espacos), datas convertidas, sexo/idade/obito padronizados, e os poucos campos sensiveis da origem levemente descaracterizados (nome de paciente descartado, campo de viagem/contato reduzido a SIM/NAO). Versionada normalmente.
+- **Ouro** (`data/gold/`): tabelas prontas para o painel — `metadados`, `casos_detalhe`, `casos_por_dia`, `incidencias`, `faixa_etaria`, `faixa_etaria_sexo`, `casos_por_sexo`, `obitos_por_municipio`, `resumo_municipios`, `populacao_municipios`, `bairros_15regional`. Herda a mesma descaracterizacao da prata. Versionada normalmente.
 
 Rode o pipeline sempre que os arquivos em `data/bronze/` forem atualizados (substituindo o `.csv`/`.xlsx` mantendo o mesmo nome/formato):
 
@@ -255,6 +257,8 @@ Todas as tabelas "largas" abaixo (`casos_por_dia`, `incidencias`, `faixa_etaria`
 
 ### Fontes de dados (lidas apenas pelo pipeline)
 
+Nenhum dos arquivos abaixo esta no repositorio — `data/bronze/` e local/nao sincronizada (ver nota no inicio da secao "Dados" e ".gitignore"). Para rodar o pipeline do zero e preciso obter esses arquivos com a 15a Regional de Saude e coloca-los manualmente em `data/bronze/`, respeitando nomes, colunas e formatos abaixo.
+
 - `data/bronze/dataset.csv`: dataset principal de casos notificados. Separador `;`, codificacao Latin-1/Windows-1252, campos como municipio, datas, sexo, idade, viagem, obito e resultado do exame.
 - `data/bronze/auxiliary/pop_municipios.xlsx`: populacao municipal utilizada nos calculos de incidencia.
 - `data/bronze/auxiliary/latitude-longitude-bairros.csv`: coordenadas e identificacao de bairros (usado para a camada de bairros da 15a regional).
@@ -265,8 +269,8 @@ Para atualizar os dados, substitua os arquivos em `data/bronze/` mantendo nomes,
 
 ### Privacidade e dados sensiveis
 
-- **`data/bronze/` nao e mais versionado.** A pasta contem os arquivos brutos como chegam da fonte (incluindo dado pessoal de paciente) e foi adicionada ao `.gitignore` — ela existe apenas localmente em cada maquina/ambiente que roda o pipeline; nenhum commit novo deve incluir arquivos dessa pasta. Os arquivos `data/bronze/dataset.csv`, `data/bronze/dataset2.csv` e `data/bronze/obitos.csv` traziam nomes reais de pacientes na coluna `nome`/`nome do paciente` — em parte dos registros de `dataset.csv`, esse campo chegou a conter texto livre com endereco, telefone e observacoes clinicas em vez de apenas o nome. Esses valores foram substituidos por um pseudonimo posicional (`PACIENTE_00001`, `PACIENTE_00002`, ...) diretamente nos arquivos locais; nenhuma outra coluna foi alterada.
-- **As camadas prata e ouro (`data/silver/`, `data/gold/`) continuam versionadas, mas sem dado pessoal identificavel.** A tabela `casos` (`pipeline/R/01_silver.R`) nunca copia o campo `nome` da planilha de origem. O campo `viajem`/`VIAJEM`, que na origem tambem podia trazer anotacoes de texto livre (e, ocasionalmente, nome de terceiros/contatos), e reduzido pelo pipeline a um categorico `"SIM"`/`"NAO"`/`NA` (`normalize_viagem()` em `pipeline/R/00_utils.R`) antes de chegar a `casos.parquet`/`casos_detalhe.parquet` — o texto original nunca e persistido.
+- **`data/bronze/` nao foi sincronizada com o projeto.** A pasta contem os arquivos brutos como chegam da fonte (incluindo dado pessoal de paciente) e esta no `.gitignore` — ela nunca foi (e nao deve ser) commitada ou distribuida junto com o repositorio; existe apenas localmente, em cada maquina/ambiente que roda o pipeline. Antes disso, os arquivos `data/bronze/dataset.csv`, `data/bronze/dataset2.csv` e `data/bronze/obitos.csv` traziam nomes reais de pacientes na coluna `nome`/`nome do paciente` — em parte dos registros de `dataset.csv`, esse campo chegou a conter texto livre com endereco, telefone e observacoes clinicas em vez de apenas o nome. Esses valores foram substituidos por um pseudonimo posicional (`PACIENTE_00001`, `PACIENTE_00002`, ...) diretamente nos arquivos locais; nenhuma outra coluna foi alterada.
+- **As camadas prata e ouro (`data/silver/`, `data/gold/`) continuam versionadas no repositorio, com os dados de origem levemente descaracterizados.** A tabela `casos` (`pipeline/R/01_silver.R`) nunca copia o campo `nome` da planilha de origem. O campo `viajem`/`VIAJEM`, que na origem tambem podia trazer anotacoes de texto livre (e, ocasionalmente, nome de terceiros/contatos), e reduzido pelo pipeline a um categorico `"SIM"`/`"NAO"`/`NA` (`normalize_viagem()` em `pipeline/R/00_utils.R`) antes de chegar a `casos.parquet`/`casos_detalhe.parquet` — o texto original nunca e persistido. Fora esses dois pontos, os demais campos de `casos`/`casos_detalhe` (datas, municipio, idade, sexo, resultado de exame) permanecem como vieram da fonte, apenas tipados/normalizados.
 - Nenhum CPF, RG, telefone, endereco ou outro identificador direto foi encontrado nas fontes de dados (`data/bronze/auxiliary/*`) alem do que foi descrito acima.
 - Se novas colunas forem adicionadas as fontes de origem no futuro, avalie antes de propaga-las para `data/silver/`/`data/gold/` se elas carregam dado pessoal — nesse caso, normalize/anonimize ou descarte o campo em `pipeline/R/01_silver.R`, no mesmo padrao usado para `nome` e `viajem`.
 
@@ -294,17 +298,23 @@ Cada `ui.R` expoe uma funcao `<nome>UI(id)` (usada em `R_code/ui.R` dentro do `p
 
 ## Instalacao e execucao
 
-Na raiz do projeto, execute no R ou RStudio:
+`data/silver/` e `data/gold/` ja vem prontas no repositorio (ver "Privacidade e dados sensiveis"), entao a aplicacao roda direto, sem precisar do pipeline nem dos arquivos brutos da camada bronze (que nao sao distribuidos com o projeto — ver "Fontes de dados"). Na raiz do projeto, execute no R ou RStudio:
 
 ```r
 install.packages("renv")
 renv::restore()
-renv::install("arrow")   # ainda nao esta no renv.lock; necessario para o pipeline e para R_code/data.R
-Rscript pipeline/run_pipeline.R   # gera data/bronze, data/silver e data/gold
+renv::install("arrow")   # ainda nao esta no renv.lock; R_code/data.R le data/gold/*.parquet com arrow::read_parquet()
 shiny::runApp()
 ```
 
-Ou abra `app.R` no RStudio e execute a aplicacao pelo botao **Run App** (depois de rodar o pipeline pelo menos uma vez).
+Ou abra `app.R` no RStudio e execute a aplicacao pelo botao **Run App**.
+
+Rodar o pipeline do zero (`Rscript pipeline/run_pipeline.R`) e opcional e so e necessario para regenerar `data/silver/`/`data/gold/` a partir de dados novos — nesse caso e preciso antes obter os arquivos brutos da 15a Regional de Saude e coloca-los manualmente em `data/bronze/` (pasta local, nao incluida no repositorio; ver "Fontes de dados"), alem de instalar tambem a dependencia exclusiva do pipeline:
+
+```r
+renv::install("readxl")   # necessario so pelo pipeline, para ler auxiliary/pop_municipios.xlsx
+Rscript pipeline/run_pipeline.R
+```
 
 O comando `renv::restore()` instala as versoes registradas em `renv.lock`. Em uma maquina nova, a restauracao pode exigir ferramentas de compilacao ou bibliotecas do sistema para pacotes espaciais como `sf`. Depois de instalar `arrow`, rode `renv::snapshot()` para registra-lo no lockfile (ver "Reproducibilidade").
 
