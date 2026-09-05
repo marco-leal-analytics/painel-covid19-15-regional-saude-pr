@@ -61,7 +61,8 @@ for( i in 1:length(dados2$NOTIFICA)){
 
 
 parana_maps              <- get_brmap(geo = "City", geo.filter = list(State=41),class      = "sf")
-regional_maps            <- parana_maps[which(parana_maps$nome %in% lista_cidade_upper),]
+regional_maps            <- parana_maps[which(toupper(parana_maps$name) %in% lista_cidade_upper),]
+regional_maps            <- st_transform(regional_maps, crs = 4326)
 datas                    <- as.Date(seq(pu_dia(dados2$COLETA)[1],pu_dia(dados2$COLETA)[2], by="days"))
 range_data               <- pu_dia(dados2$COLETA);range_data
 
@@ -201,6 +202,8 @@ incidencias[,2:32]   <- round(x = incidencias[,2:32],digits = 2)
 #
 # # ATRIBUTOS PARA O MAPA -------
 #
+incidencia_for_heat <- as.numeric(unlist(incidencias[length(incidencias[,1]), 2:32], use.names = FALSE))
+
 objeto_sf      <- data.frame(name=lista_cidade_upper,x=coordenadas[,1],y=coordenadas[,2],
                              casos=apply(data_casos[,3:32],2,sum),row.names = NULL) %>%
   st_as_sf(coords = c("x", "y"), crs = 4326)
@@ -208,17 +211,16 @@ objeto_sf$uid  <- lista_cidade_upper
 
 labels_map <- sprintf(
   "<strong>%s</strong><br/><strong>POPULAÇÃO : </strong>%g<br/><strong>CASOS : </strong>%g<br/><strong>INCIDÊNCIA : </strong>%g<br/>",
-  lista_cidade_upper, populacao_municipio$População[2:31],apply(data_casos[,3:32],2,sum),incidencias[length(incidencias[,1]),3:32]
+  lista_cidade_upper, populacao_municipio$População[2:31],apply(data_casos[,3:32],2,sum),incidencia_for_heat[3:32]
 ) %>% lapply(htmltools::HTML)
 
 labels_map <- sprintf(
   "<strong>%s</strong><br/><strong>POPULAÇÃO : </strong>%g<br/><strong>CASOS : </strong>%g<br/><strong>ÓBITOS : </strong>%g<br/><strong>INCIDÊNCIA : </strong>%g<br/>",
-  lista_cidade_upper, populacao_municipio$População[2:31],apply(data_casos[,3:32],2,sum),obitos_mun,incidencias[length(incidencias[,1]),3:32]
+  lista_cidade_upper, populacao_municipio$População[2:31],apply(data_casos[,3:32],2,sum),obitos_mun,incidencia_for_heat[3:32]
 ) %>% lapply(htmltools::HTML)
 
 
 
-incidencia_for_heat    <- as.vector(incidencias[length(incidencias[,1]),2:32])
 incidencia_range       <- range(incidencia_for_heat[incidencia_for_heat>0])
 inc                    <- ceiling(incidencia_range[2]/10)
 
@@ -230,11 +232,13 @@ pal                   <- colorBin(palette = heatcols,domain = incidencia_for_hea
 
 pal2                  <- colorBin(palette = heatcols,domain = incidencia_for_heat, bins = bin2)
 
+regional_maps$incidencia <- incidencia_for_heat[match(toupper(regional_maps$name), lista_cidade_upper) + 1L]
+
 ############# BAIRROS ########
 
 coordenadas_bairros            <- read.table(file = file.path(data_dir, "auxiliary", "latitude-longitude-bairros.csv"),header = T,sep = ";",encoding = "UTF-8")
 coordenadas_bairros_pr         <- coordenadas_bairros %>% filter(uf == "PR")
-pos                            <- which(toupper(coordenadas_bairros_pr$municipio) %in%  regional_maps$nome )
+pos                            <- which(toupper(coordenadas_bairros_pr$municipio) %in%  toupper(regional_maps$name) )
 coordenadas_bairros_15regional <- coordenadas_bairros_pr[pos,]
 coordenadas_bairros            <- read.table(file = file.path(data_dir, "auxiliary", "latitude-longitude-bairros.csv"),header = T,sep = ";",encoding = "UTF-8")
 data_list <- list('Casos por dia'=data_casos,'Incidências'=incidencias)

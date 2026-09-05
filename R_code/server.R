@@ -707,7 +707,7 @@ server <- function(input, output, session) {
   # setview <- data.frame(lng=-50.75,lat = -23.15)
   output$map <- renderLeaflet({
     
-    leaflet(regional_maps,
+    leaflet(
             options = list(zoomControl = FALSE,
                            #center = c(-23.2,-53.06396),
                            zoom = 9,minZoom = 9, maxZoom = 9,
@@ -719,7 +719,8 @@ server <- function(input, output, session) {
                  popup = labels_map,
                  layerId = ~uid)   %>%
       addPolygons(
-        fillColor = pal(as.numeric(incidencia_for_heat[2:31])),
+        data = regional_maps,
+        fillColor = ~pal(incidencia),
         weight = 2,
         opacity = 1,
         color = "white",
@@ -731,12 +732,13 @@ server <- function(input, output, session) {
           dashArray = "",
           fillOpacity = 0.7,
           bringToFront = TRUE),
-        label = labels_map,
+        label = labels_map[seq_len(nrow(regional_maps))],
         labelOptions = labelOptions(
           style = list("font-weight" = "normal", padding = "3px 8px"),
           textsize = "15px",
           direction = "auto")) %>%
-      addLegend(pal = pal, values = ~density, opacity = 0.7, title = NULL,
+      addLegend(pal = pal, values = as.numeric(regional_maps$incidencia),
+            opacity = 0.7, title = NULL,
                 position = "topleft")
     
     
@@ -1001,7 +1003,7 @@ server <- function(input, output, session) {
     if(n_casos[which(names(n_casos) == message)] == 0){
       return()
     }else{
-      source('source.R', local=TRUE, encoding="UTF-8")
+      source(file.path(getwd(), "R_code/legacy/source.R"), local=TRUE, encoding="UTF-8")
     }
     
     
@@ -1487,7 +1489,7 @@ server <- function(input, output, session) {
   
   output$atraso15 <- renderPlotly({
     
-    source('source2.R', local=TRUE, encoding="UTF-8")
+    source(file.path(getwd(), "R_code/legacy/source2.R"), local=TRUE, encoding="UTF-8")
     
     atraso(15)
     
@@ -1509,7 +1511,7 @@ server <- function(input, output, session) {
   output$atraso30 <- renderPlotly({
     
     
-    source('source2.R', local=TRUE, encoding="UTF-8")
+    source(file.path(getwd(), "R_code/legacy/source2.R"), local=TRUE, encoding="UTF-8")
     
     atraso(30)
     
@@ -1529,7 +1531,7 @@ server <- function(input, output, session) {
   output$atraso45 <- renderPlotly({
     
     
-    source('source2.R', local=TRUE, encoding="UTF-8")
+    source(file.path(getwd(), "R_code/legacy/source2.R"), local=TRUE, encoding="UTF-8")
     
     atraso(45)
     
@@ -1550,7 +1552,7 @@ server <- function(input, output, session) {
   output$atraso60 <- renderPlotly({
     
     
-    source('source2.R', local=TRUE, encoding="UTF-8")
+    source(file.path(getwd(), "R_code/legacy/source2.R"), local=TRUE, encoding="UTF-8")
     
     atraso(60)
     
@@ -1571,7 +1573,7 @@ server <- function(input, output, session) {
   output$espostos1 <- renderPlotly({
     
     
-    source('source2.R', local=TRUE, encoding="UTF-8")
+    source(file.path(getwd(), "R_code/legacy/source2.R"), local=TRUE, encoding="UTF-8")
     
     espostos(1)
     
@@ -1592,7 +1594,7 @@ server <- function(input, output, session) {
   
   output$espostos3 <- renderPlotly({
     
-    source('source2.R', local=TRUE, encoding="UTF-8")
+    source(file.path(getwd(), "R_code/legacy/source2.R"), local=TRUE, encoding="UTF-8")
     
     espostos(3)
     
@@ -1613,7 +1615,7 @@ server <- function(input, output, session) {
   output$espostos5 <- renderPlotly({
     
     
-    source('source2.R', local=TRUE, encoding="UTF-8")
+    source(file.path(getwd(), "R_code/legacy/source2.R"), local=TRUE, encoding="UTF-8")
     
     espostos(5)
     
@@ -1635,7 +1637,7 @@ server <- function(input, output, session) {
     
     
     
-    source('source2.R', local=TRUE, encoding="UTF-8")
+    source(file.path(getwd(), "R_code/legacy/source2.R"), local=TRUE, encoding="UTF-8")
     
     espostos(10)
     
@@ -1659,7 +1661,7 @@ server <- function(input, output, session) {
   
   output$rankrisco <- renderPlotly({
     
-    source('source3.R', local=TRUE, encoding="UTF-8")
+    source(file.path(getwd(), "R_code/legacy/source3.R"), local=TRUE, encoding="UTF-8")
     
     plotrankrisco
     
@@ -1679,7 +1681,7 @@ server <- function(input, output, session) {
     
     
     
-    source('source3.R', local=TRUE, encoding="UTF-8")
+    source(file.path(getwd(), "R_code/legacy/source3.R"), local=TRUE, encoding="UTF-8")
     
     plotrankriscorelativo
     
