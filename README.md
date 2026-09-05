@@ -18,8 +18,8 @@ O painel transforma registros de casos em indicadores, tabelas, mapas e graficos
 
 - R 4.x
 - Shiny
-- `bslib` para o tema visual (Bootstrap 5, cores, tipografia e componentes `card`)
-- Shiny Dashboard e Shiny Dashboard Plus (componentes legados, em migracao para `bslib`)
+- `bslib` para o tema visual (Bootstrap 5, cores, tipografia e componentes `card`) - a versao do Bootstrap e fixa em 5+ porque `bslib::card()`/`card_header()`/`card_body()` exigem essa versao; nao e possivel baixar para 3/4
+- Shiny Dashboard e Shiny Dashboard Plus (componentes legados, usados apenas onde ainda nao ha equivalente em `bslib`)
 - `plotly` para graficos interativos
 - `leaflet` e `sf` para mapas e dados espaciais
 - `DT` para tabelas interativas
@@ -38,7 +38,7 @@ A lista completa, incluindo versoes resolvidas e dependencias transitivas, esta 
 
 O ponto de entrada e `app.R`. Ele define a raiz do projeto, ativa o `renv`, carrega os pacotes, prepara os dados, monta o tema `bslib`, carrega os modulos de interface e cria o objeto `shinyApp`.
 
-O projeto esta em migracao incremental de um `server.R` monolitico para modulos Shiny reais (`moduleServer()`/`NS()`), um por aba, cada um em sua propria pasta com `ui.R` e `server.R`. Ate o momento, **panorama_geral**, **mapa_cidades** e **nivel_risco** ja seguem esse padrao; **colaboradores**, **calculadora**, **configuracoes** e **comportamento_inicial** ainda estao no formato legado (um unico arquivo com um objeto `tabPanel` global e outputs soltos em `server.R`) e serao convertidos nas proximas etapas.
+O projeto foi migrado de um `server.R` monolitico para modulos Shiny reais (`moduleServer()`/`NS()`), um por aba, cada um em sua propria pasta com `ui.R` e `server.R`. Os 7 modulos (`panorama_geral`, `mapa_cidades`, `nivel_risco`, `colaboradores`, `calculadora`, `comportamento_inicial` e `configuracoes`) ja seguem esse padrao. `R_code/server.R` continua existindo, mas hoje cuida apenas do login/navegacao e das chamadas `*Server(id)` de cada modulo - nao ha mais outputs soltos de aba nesse arquivo.
 
 ```text
 .
@@ -51,18 +51,18 @@ O projeto esta em migracao incremental de um `server.R` monolitico para modulos 
 |   |-- packages.R                # Pacotes usados pela aplicacao (inclui bslib)
 |   |-- functions.R               # Funcoes auxiliares reutilizaveis
 |   |-- constants.R               # Constantes, helpers de UI (ex.: box_card()) e configuracoes legadas
-|   |-- theme.R                   # Definicao do bs_theme() a partir dos tokens em assets/
+|   |-- theme.R                   # Definicao do bs_theme() a partir dos tokens em assets/ (version = 5, obrigatorio)
 |   |-- data.R                    # Ingestao e preparacao dos dados
 |   |-- ui.R                      # Composicao principal da interface (fluidPage com theme = app_theme)
-|   |-- server.R                  # Logica reativa e outputs das abas ainda nao modularizadas
-|   |-- modules/                  # Componentes das abas do painel
-|   |   |-- panorama_geral/       # ui.R + server.R (modulo Shiny real)
-|   |   |-- mapa_cidades/         # ui.R + server.R (modulo Shiny real)
-|   |   |-- nivel_risco/          # ui.R + server.R (modulo Shiny real)
-|   |   |-- colaboradores.R       # legado (a converter)
-|   |   |-- calculadora.R         # legado (a converter)
-|   |   |-- configuracoes.R       # legado (a converter)
-|   |   `-- comportamento_inicial.R # legado (a converter)
+|   |-- server.R                  # Login, navegacao e chamadas *Server(id) de cada modulo
+|   |-- modules/                  # Um modulo Shiny real por aba (ui.R + server.R)
+|   |   |-- panorama_geral/
+|   |   |-- mapa_cidades/
+|   |   |-- nivel_risco/
+|   |   |-- colaboradores/
+|   |   |-- calculadora/
+|   |   |-- configuracoes/
+|   |   `-- comportamento_inicial/
 |   `-- legacy/                   # Scripts antigos ainda referenciados via source()
 |-- data/
 |   |-- dataset.csv              # Dataset principal utilizado no painel
@@ -93,12 +93,14 @@ O projeto esta em migracao incremental de um `server.R` monolitico para modulos 
 4. `R_code/functions.R` e `R_code/constants.R` disponibilizam funcoes, helpers de UI (`box_card()`) e configuracoes.
 5. `R_code/theme.R` monta `app_theme <- bslib::bs_theme(...)` a partir dos tokens em `assets/sass/` e aplica as regras extra de `assets/sass/main.scss`.
 6. `R_code/data.R` le os arquivos de `data/` e prepara os objetos analiticos.
-7. Os arquivos de `R_code/modules/` (pastas com `ui.R`/`server.R` para os modulos ja migrados, ou arquivo unico para os legados) constroem as abas e componentes da interface.
+7. Os arquivos de `R_code/modules/<nome>/{ui.R,server.R}` sao carregados aos pares - cada um define `<nome>UI(id)` e `<nome>Server(id)`.
 8. `R_code/ui.R` monta a interface principal com `fluidPage(theme = app_theme, ...)`.
-9. `R_code/server.R` registra a reatividade das abas ainda nao modularizadas, chama `*Server(id)` dos modulos ja convertidos, e cuida de login e navegacao.
+9. `R_code/server.R` chama `<nome>Server(id)` de cada modulo e monta o `tabsetPanel(id = 'navbar', <nome1>UI("id1"), ...)` com as UIs; tambem cuida de login, logout e da liberacao condicional da aba "Configuracoes" via `appendTab()`.
 10. `shinyApp(ui = ui, server = server)` inicia a aplicacao.
 
 > Nota sobre `source()` dentro de `server.R`: como o Shiny executa `app.R` em um ambiente proprio (nao o `.GlobalEnv`) e os `source()` internos de `app.R` avaliam o conteudo no `.GlobalEnv` por padrao, qualquer caminho de arquivo usado dentro de `server.R`/modulos deve ser construido com `getwd()` (jamais com a variavel `project_root`, que so existe no escopo do proprio `app.R`).
+
+> Nota sobre modais: `shinyBS::bsModal()` depende do jQuery/`data-toggle` do Bootstrap 3-4 e nao funciona sob `bs_theme(version = 5)` (o Bootstrap 5 removeu o jQuery e renomeou esses atributos para `data-bs-*`) - o clique no gatilho simplesmente nao abre nada, sem erro no console. Use sempre `shiny::showModal(shiny::modalDialog(...))` (nativo do Shiny, compativel com qualquer Bootstrap) em vez de `bsModal`/`toggleModal`. O modulo `nivel_risco` segue esse padrao (`observeEvent(input$Id113, { showModal(...) })`).
 
 ## Dados
 
@@ -120,17 +122,21 @@ Para atualizar os dados, substitua os arquivos mantendo os nomes, colunas espera
 
 ## Modulos do painel
 
-| Modulo | Status | Descricao |
-|---|---|---|
-| **Panorama geral** (`panorama_geral`) | Migrado (`moduleServer`/`NS`) | Indicadores regionais, casos, obitos, sexo, faixa etaria e incidencia. |
-| **Mapa por cidades** (`mapa_cidades`) | Migrado (`moduleServer`/`NS`) | Mapa Leaflet, modal por cidade com casos acumulados, casos diarios, incidencia, viagem, sexo e indicadores de propagacao. |
-| **Nivel de risco** (`nivel_risco`) | Migrado (`moduleServer`/`NS`) | Rankings por risco estimado, data de referencia e escala linear ou logaritmica. |
-| **Colaboradores** | Legado | Informacoes institucionais das equipes participantes. |
-| **Configuracoes** | Legado | Consulta dos dados brutos, tabelas de casos e populacao; acesso condicionado ao usuario autorizado. |
-| **Calculadora SEIR** | Legado | Controles para populacao, periodo, taxas e estados iniciais do modelo. |
-| **Comportamento inicial** | Legado, fora da navegacao | Modulo historico mantido em `R_code/modules/`, nao esta ligado a nenhuma aba visivel atualmente. |
+Todos os 7 modulos seguem o padrao `moduleServer()`/`NS()`, cada um em `R_code/modules/<nome>/{ui.R,server.R}`.
 
-Nos modulos ja migrados, cada `ui.R` expoe uma funcao `<nome>UI(id)` (usada em `server.R` dentro do `tabsetPanel(id = 'navbar', ...)`) e cada `server.R` expoe `<nome>Server(id)` (chamada uma vez dentro de `server <- function(input, output, session) {...}`). O `mapa_cidades` tem uma peculiaridade: o painel exibido no modal ao clicar numa cidade vem de uma segunda funcao, `mapa_cidades_panelUI(id)`, chamada a partir do proprio `server.R` do modulo (e nao do `ui.R` principal), pois o conteudo do modal e montado dinamicamente no clique.
+| Modulo | Na navegacao? | Descricao |
+|---|---|---|
+| **Panorama geral** (`panorama_geral`) | Sim | Indicadores regionais, casos, obitos, sexo, faixa etaria e incidencia. |
+| **Mapa por cidades** (`mapa_cidades`) | Sim | Mapa Leaflet, modal por cidade com casos acumulados, casos diarios, incidencia, viagem, sexo e indicadores de propagacao. |
+| **Nivel de risco** (`nivel_risco`) | Sim | Rankings por risco estimado, data de referencia e escala linear ou logaritmica; modal de ajuda com video (`showModal`/`modalDialog`). |
+| **Colaboradores** (`colaboradores`) | Sim | Informacoes institucionais das equipes participantes. Aba puramente estatica - `colaboradoresServer()` nao tem outputs proprios. |
+| **Configuracoes** (`configuracoes`) | Condicional | Consulta dos dados brutos, tabelas de casos e populacao. So aparece apos login do usuario `mleal`, via `appendTab(inputId = "navbar", configuracoesUI("configuracoes"))` dentro do `observeEvent(input$login)` em `R_code/server.R`. |
+| **Calculadora SEIR** (`calculadora`) | Nao | Controles para populacao, periodo, taxas e estados iniciais do modelo. Modulo funcional, mas a referencia em `R_code/ui.R` (dentro do objeto `mais`) esta comentada. |
+| **Comportamento inicial** (`comportamento_inicial`) | Nao | Estimativas de atraso nas medidas de mitigacao e chegada de expostos, por cidade. Mesmo status do `calculadora`: funcional, porem fora da navegacao (referencia comentada em `mais`). |
+
+Cada `ui.R` expoe uma funcao `<nome>UI(id)` (usada em `R_code/server.R` dentro do `tabsetPanel(id = 'navbar', ...)`, ou via `appendTab()` no caso de `configuracoes`) e cada `server.R` expoe `<nome>Server(id)` (chamada uma vez dentro de `server <- function(input, output, session) {...}`). O `mapa_cidades` tem uma peculiaridade: o painel exibido no modal ao clicar numa cidade vem de uma segunda funcao, `mapa_cidades_panelUI(id)`, chamada a partir do proprio `server.R` do modulo (e nao do `ui.R` principal), pois o conteudo do modal e montado dinamicamente no clique.
+
+Para religar `calculadora`/`comportamento_inicial` na navegacao: descomente as chamadas correspondentes (`calculadora_seirUI("calculadora")` / `comportamento_inicialUI("comportamento_inicial")`) dentro do objeto `mais` em `R_code/ui.R`, e garanta que os respectivos `*Server(id)` (ja chamados em `R_code/server.R`) usem o mesmo `id` passado na UI.
 
 ## Instalacao e execucao
 
@@ -162,20 +168,22 @@ Nao versione `renv/library/`, caches ou bibliotecas locais. O arquivo `renv.lock
 Antes de abrir uma alteracao:
 
 1. Confirme que os dados esperados existem em `data/`.
-2. Preserve os IDs de inputs e outputs usados pela interface e pelo servidor. Nos modulos ja migrados, os IDs sao namespaced (`ns("id")` no `ui.R`); em modulos legados, os IDs ainda sao globais e compartilhados com `server.R`.
+2. Preserve os IDs de inputs e outputs usados pela interface e pelo servidor - todos os modulos usam IDs namespaced (`ns("id")` no `ui.R`, lidos como `input$id`/`output$id` dentro do `moduleServer` correspondente).
 3. Mantenha a ingestao de dados em `R_code/data.R` e a apresentacao nos modulos.
-4. Ao converter um modulo legado para o padrao `ui.R`/`server.R`: crie a pasta `R_code/modules/<nome>/`, troque `shinydashboard::box()` por `box_card()` (helper compartilhado em `R_code/constants.R`), namespaced todos os `*Output(...)` com `ns()`, use `getwd()` (nunca `project_root`) em qualquer `source()` interno, e atualize `app.R` (source dos dois arquivos), `R_code/server.R` (chamada `<nome>Server(id)` e troca do objeto global por `<nome>UI(id)` no `tabsetPanel`).
-5. Execute `renv::status()` para verificar as dependencias.
-6. Inicie o Shiny e teste as abas, filtros, tabelas, mapas e autenticacao afetados.
-7. Evite colocar datasets, scripts R ou artefatos gerados em `www/` ou `assets/`.
+4. Ao criar ou alterar um modulo: use `box_card()` (helper compartilhado em `R_code/constants.R`) em vez de `shinydashboard::box()`, namespaced todo `*Output(...)`/`inputId` com `ns()` no `ui.R`, use `getwd()` (nunca `project_root`) em qualquer `source()` interno ao `server.R` do modulo, e **nao use `shinyBS::bsModal()`/`toggleModal()`** - use `shiny::showModal(shiny::modalDialog(...))`, disparado por um `observeEvent()` no botao (veja `nivel_risco` como referencia).
+5. Nao baixe a versao do `bs_theme()` em `R_code/theme.R` para resolver algum componente legado quebrado - `bslib::card()` exige Bootstrap 5+. Troque o componente incompativel por um equivalente nativo do Shiny em vez de mexer na versao do tema.
+6. Execute `renv::status()` para verificar as dependencias.
+7. Inicie o Shiny e teste as abas, filtros, tabelas, mapas, modais e autenticacao afetados.
+8. Evite colocar datasets, scripts R ou artefatos gerados em `www/` ou `assets/`.
 
 ## Validacao atual
 
 A estrutura reorganizada foi validada com:
 
 - parse (`parse()`) de todos os arquivos R do bootstrap, do tema e dos modulos;
-- inicializacao real do servidor Shiny (`shiny::runApp`) e requisicao HTTP local com resposta `200`;
-- testes isolados de UI e servidor com `shiny::testServer()` para cada modulo migrado (`panorama_geral`, `mapa_cidades`, `nivel_risco`), incluindo simulacao de cliques no mapa e troca de escala Linear/Logaritmica no ranking de risco;
+- inicializacao real do servidor Shiny (`shiny::runApp`) e requisicao HTTP local com resposta `200`, confirmando que o bundle servido e Bootstrap 5 (`bootstrap-5.x.x/bootstrap.min.css`);
+- testes isolados de UI e servidor com `shiny::testServer()` para cada um dos 7 modulos, incluindo: cliques simulados no mapa (cidade com e sem dados de viagem), troca de escala Linear/Logaritmica e do gatilho de ajuda no ranking de risco, troca das 3 opcoes de dados em Configuracoes, e o modelo SEIR com valores reais de entrada;
+- teste do fluxo de login completo (`shiny::testServer(server, {...})` com as credenciais reais do usuario `mleal`), validando o `appendTab()` que libera a aba Configuracoes;
 - verificacao de consistencia do ambiente `renv`.
 
 Durante a inicializacao podem aparecer avisos de pacotes carregados previamente pelo ambiente local do R e avisos de deprecacao de componentes visuais. Eles nao impedem a execucao do painel.
