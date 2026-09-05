@@ -12,7 +12,8 @@ comportamento_inicialServer <- function(id) {
 
       source(file.path(getwd(), "R_code/legacy/source2.R"), local=TRUE, encoding="UTF-8")
 
-      atraso(15)
+      fig <- atraso(15)
+      fig %>% dark_plotly()
 
     })
 
@@ -20,7 +21,8 @@ comportamento_inicialServer <- function(id) {
 
       source(file.path(getwd(), "R_code/legacy/source2.R"), local=TRUE, encoding="UTF-8")
 
-      atraso(30)
+      fig <- atraso(30)
+      fig %>% dark_plotly()
 
     })
 
@@ -28,7 +30,8 @@ comportamento_inicialServer <- function(id) {
 
       source(file.path(getwd(), "R_code/legacy/source2.R"), local=TRUE, encoding="UTF-8")
 
-      atraso(45)
+      fig <- atraso(45)
+      fig %>% dark_plotly()
 
     })
 
@@ -36,7 +39,8 @@ comportamento_inicialServer <- function(id) {
 
       source(file.path(getwd(), "R_code/legacy/source2.R"), local=TRUE, encoding="UTF-8")
 
-      atraso(60)
+      fig <- atraso(60)
+      fig %>% dark_plotly()
 
     })
 
@@ -44,7 +48,8 @@ comportamento_inicialServer <- function(id) {
 
       source(file.path(getwd(), "R_code/legacy/source2.R"), local=TRUE, encoding="UTF-8")
 
-      espostos(1)
+      fig <- espostos(1)
+      fig %>% dark_plotly()
 
     })
 
@@ -52,7 +57,8 @@ comportamento_inicialServer <- function(id) {
 
       source(file.path(getwd(), "R_code/legacy/source2.R"), local=TRUE, encoding="UTF-8")
 
-      espostos(3)
+      fig <- espostos(3)
+      fig %>% dark_plotly()
 
     })
 
@@ -60,7 +66,8 @@ comportamento_inicialServer <- function(id) {
 
       source(file.path(getwd(), "R_code/legacy/source2.R"), local=TRUE, encoding="UTF-8")
 
-      espostos(5)
+      fig <- espostos(5)
+      fig %>% dark_plotly()
 
     })
 
@@ -68,7 +75,8 @@ comportamento_inicialServer <- function(id) {
 
       source(file.path(getwd(), "R_code/legacy/source2.R"), local=TRUE, encoding="UTF-8")
 
-      espostos(10)
+      fig <- espostos(10)
+      fig %>% dark_plotly()
 
     })
 

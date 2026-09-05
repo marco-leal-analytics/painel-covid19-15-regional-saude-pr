@@ -22,7 +22,7 @@ nivel_riscoServer <- function(id) {
 
       source(file.path(getwd(), "R_code/legacy/source3.R"), local=TRUE, encoding="UTF-8")
 
-      plotrankrisco
+      plotrankrisco %>% dark_plotly()
 
     })
 
@@ -30,7 +30,7 @@ nivel_riscoServer <- function(id) {
 
       source(file.path(getwd(), "R_code/legacy/source3.R"), local=TRUE, encoding="UTF-8")
 
-      plotrankriscorelativo
+      plotrankriscorelativo %>% dark_plotly()
 
     })
 

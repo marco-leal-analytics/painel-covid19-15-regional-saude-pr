@@ -159,8 +159,8 @@ mapa_cidadesServer <- function(id) {
 
           fig<-plot_ly(x = ~ stack_casos$label, y = ~ cumsum(stack_casos$values),height=500, mode = 'lines+markers',
                        type="scatter",
-                       text = "", marker=list(color = "#09557f", size=9, opacity=0.75),
-                       line = list(color = "#09557f", width = 4,opacity= 0.75))
+                       text = "", marker=list(color = mla_palette[1], size=9, opacity=0.75),
+                       line = list(color = mla_palette[1], width = 4,opacity= 0.75))
           fig <- fig %>% layout(hovermode = TRUE, spikedistance =  -1,
                                 xaxis = list(title = "<b>DATAS</b>", showspikes = TRUE, titlefont = list(size = 24),
                                              spikemode  = 'across', #toaxis, across, marker
@@ -174,7 +174,9 @@ mapa_cidadesServer <- function(id) {
                                               showgrid=TRUE),
 
                                 plot_bgcolor  = "rgba(0, 0, 0, 0)",
-                                paper_bgcolor = "rgba(0, 0, 0, 0)") %>% config(displayModeBar = FALSE)
+                                paper_bgcolor = "rgba(0, 0, 0, 0)") %>%
+            dark_plotly() %>%
+            config(displayModeBar = FALSE)
           fig
         }
       })
@@ -194,7 +196,7 @@ mapa_cidadesServer <- function(id) {
           stack_casos <- stack_casos[c(which(stack_casos$ind == message)),]
 
           fig<-plot_ly(x = ~ stack_casos$label, y = ~ stack_casos$values, type="bar",height= 500,
-                       text = "", marker=list(color = "#09557f", size=10, opacity=0.75))
+                       text = "", marker=list(color = mla_palette[2], size=10, opacity=0.75))
           fig <- fig %>% layout(hovermode = TRUE, spikedistance =  -1,
                                 xaxis = list(title = "<b>DATAS</b>", showspikes = TRUE, titlefont = list(size = 24),
                                              spikemode  = 'across', #toaxis, across, marker
@@ -212,6 +214,7 @@ mapa_cidadesServer <- function(id) {
                                 autosize = T,
                                 plot_bgcolor  = "rgba(0, 0, 0, 0)",
                                 paper_bgcolor = "rgba(0, 0, 0, 0)") %>%
+            dark_plotly() %>%
             config(displayModeBar = FALSE)
           fig
 
@@ -233,10 +236,10 @@ mapa_cidadesServer <- function(id) {
 
 
           fig<-plot_ly(x = ~ stack_incidencias[,1], y = ~ stack_incidencias[,2], mode = 'lines+markers', type="scatter",height= 500,
-                       text = "", marker=list(color = "#09557f", size=9, opacity=0.75),
-                       line = list(color = "#09557f", width = 4,opacity= 0.75), name = colnames(stack_incidencias)[2]) %>%
-            add_trace(y = ~stack_incidencias[,3], name = colnames(stack_incidencias)[3], line = list(color = "#FF0000", width = 4),
-                      marker=list(color = "#FF0000", size=9, opacity=0.75) )
+                       text = "", marker=list(color = mla_palette[1], size=9, opacity=0.75),
+                       line = list(color = mla_palette[1], width = 4,opacity= 0.75), name = colnames(stack_incidencias)[2]) %>%
+            add_trace(y = ~stack_incidencias[,3], name = colnames(stack_incidencias)[3], line = list(color = mla_palette[5], width = 4),
+                      marker=list(color = mla_palette[5], size=9, opacity=0.75) )
           fig <- fig %>% layout(hovermode = TRUE, spikedistance =  -1,
                                 xaxis = list(title = "<b>DATAS</b>", showspikes = TRUE, titlefont = list(size = 24),
                                              spikemode  = 'across', #toaxis, across, marker
@@ -252,6 +255,7 @@ mapa_cidadesServer <- function(id) {
 
                                 plot_bgcolor  = "rgba(0, 0, 0, 0)",
                                 paper_bgcolor = "rgba(0, 0, 0, 0)") %>%
+            dark_plotly() %>%
             config(displayModeBar = FALSE)
           fig
 
@@ -271,7 +275,7 @@ mapa_cidadesServer <- function(id) {
 
 
           fig<-plot_ly( y = ~ x, x = ~ y, type="bar",orientation = 'h',height= 500,
-                        text = "", marker=list(color = "#09557f", size=10, opacity=0.75),
+                        text = "", marker=list(color = mla_palette[2], size=10, opacity=0.75),
                         name = 'Suscetíveis')
           fig <- fig %>% layout(hovermode = TRUE, spikedistance =  -1,
                                 xaxis = list(title = "<b>NÚMERODE CASOS</b>", showspikes = TRUE, titlefont = list(size = 24),
@@ -286,6 +290,7 @@ mapa_cidadesServer <- function(id) {
                                               showgrid=TRUE),
                                 plot_bgcolor  = "rgba(0, 0, 0, 0)",
                                 paper_bgcolor = "rgba(0, 0, 0, 0)") %>%
+            dark_plotly() %>%
             config(displayModeBar = FALSE)
           fig
 
@@ -303,8 +308,7 @@ mapa_cidadesServer <- function(id) {
 
           casos_sexo_municipio <- casos_sexo[,message]
           total_sexo <- sum(casos_sexo_municipio)
-          panel <- fluidRow(column(width=12,align="left",tags$div(HTML('<i class="fa fa-venus-mars"style = "color:#0072B2;font-size:50px"></i>
-                                     <b style = "padding-left:0px;color:#000000;font-size:30px"> SEXO </b>'))),
+          panel <- fluidRow(column(width=12,align="left",tags$div(class = "section-subtitle", "Sexo")),
 
                             fluidRow(
 
@@ -332,8 +336,7 @@ mapa_cidadesServer <- function(id) {
 
         }else{
 
-          panel <-  fluidRow(fluidRow(tags$div(HTML('<i class="fa fa-venus-mars"style = "color:#0072B2;font-size:50px"></i>
-                                     <b style = "padding-left:0px;color:#000000;font-size:30px"> SEXO </b>'))))
+          panel <-  fluidRow(fluidRow(tags$div(class = "section-subtitle", "Sexo")))
           return(panel)
         }
       })
@@ -380,7 +383,7 @@ mapa_cidadesServer <- function(id) {
 
 
           if (rm_accent( message) == "MARINGA") {
-            viajem15(rm_accent( message))
+            viajem15(rm_accent( message)) %>% dark_plotly()
           }
 
 
@@ -408,8 +411,8 @@ mapa_cidadesServer <- function(id) {
 
 
             fig<-plot_ly(x = ~ dadosfinal$time, y = ~ dadosfinal$acumulado, mode = 'lines+markers', type="scatter",
-                         text = "", marker=list(color = "red", size=10),
-                         line = list(color = 'rgb(255, 0, 0)', width = 4), name = 'Suscetíveis')
+                         text = "", marker=list(color = mla_palette[5], size=10),
+                         line = list(color = mla_palette[5], width = 4), name = 'Suscetíveis')
             fig <- fig %>% layout(title = "Total de casos confirmados", hovermode = TRUE, spikedistance =  -1,
                                   xaxis = list(title = "Dia da coleta do exame", showspikes = TRUE,
                                                spikemode  = 'across', #toaxis, across, marker
@@ -420,7 +423,8 @@ mapa_cidadesServer <- function(id) {
                                                 spikemode  = 'across', #toaxis, across, marker
                                                 spikesnap = 'cursor', zeroline=FALSE,
                                                 showline=TRUE,
-                                                showgrid=TRUE))
+                                                showgrid=TRUE)) %>%
+              dark_plotly()
             fig
           }
         }
@@ -526,10 +530,10 @@ mapa_cidadesServer <- function(id) {
             y<-funcao(tempo)
 
             fig<-plot_ly(x = ~ tempo, y = ~ y, mode = 'lines', type="scatter",
-                         text = "", color = "blue", size=10,
-                         line = list(color = 'rgb(8,48,107)', width = 6), name = 'ajuste')
+                         text = "", color = mla_palette[1], size=10,
+                         line = list(color = mla_palette[1], width = 6), name = 'ajuste')
             fig<-fig %>% add_trace(y = ~ dadosfinal$acumulado[init:fim], mode = 'markers',
-                                   line = list(width = 0), marker=list(color = "red", size=10), name = 'dados observados')
+                                   line = list(width = 0), marker=list(color = mla_palette[5], size=10), name = 'dados observados')
 
 
             fig <- fig %>% layout(hovermode = TRUE, spikedistance =  -1,
@@ -547,7 +551,9 @@ mapa_cidadesServer <- function(id) {
                                   height= 500,
                                   plot_bgcolor  = "rgba(0, 0, 0, 0)",
                                   paper_bgcolor = "rgba(0, 0, 0, 0)",
-                                  fig_bgcolor   = "rgba(0, 0, 0, 0)") %>% config(displayModeBar = FALSE)
+                                  fig_bgcolor   = "rgba(0, 0, 0, 0)") %>%
+              dark_plotly() %>%
+              config(displayModeBar = FALSE)
 
 
 
@@ -701,8 +707,8 @@ mapa_cidadesServer <- function(id) {
 
 
             fig<-plot_ly(x = ~ dadosfinal$time, y = ~ dadosfinal$infectados, mode = 'lines+markers', type="scatter",
-                         text = "", marker=list(color = "red", size=10),
-                         line = list(color = 'rgb(255, 0, 0)', width = 4), name = 'Suscetíveis')
+                         text = "", marker=list(color = mla_palette[5], size=10),
+                         line = list(color = mla_palette[5], width = 4), name = 'Suscetíveis')
 
 
             fig <- fig %>% layout(hovermode = TRUE, spikedistance =  -1,
@@ -720,7 +726,8 @@ mapa_cidadesServer <- function(id) {
                                   height= 500,
                                   plot_bgcolor  = "rgba(0, 0, 0, 0)",
                                   paper_bgcolor = "rgba(0, 0, 0, 0)",
-                                  fig_bgcolor   = "rgba(0, 0, 0, 0)")
+                                  fig_bgcolor   = "rgba(0, 0, 0, 0)") %>%
+              dark_plotly()
 
             fig
 
@@ -739,8 +746,9 @@ mapa_cidadesServer <- function(id) {
 
         #source('source.R', local=TRUE, encoding="UTF-8")
 
-
-        taxaevol(1)
+        fig <- taxaevol(1)
+        if (is.null(fig)) return(fig)
+        fig %>% dark_plotly()
 
       })
 
@@ -754,7 +762,9 @@ mapa_cidadesServer <- function(id) {
       output$rzerov <- renderPlotly({
 
         # source('source.R', local=TRUE, encoding="UTF-8")
-        taxaevol(10)
+        fig <- taxaevol(10)
+        if (is.null(fig)) return(fig)
+        fig %>% dark_plotly()
 
       })
     })

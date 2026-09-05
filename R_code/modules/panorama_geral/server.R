@@ -43,8 +43,8 @@ panorama_geralServer <- function(id) {
                      hoverinfo = 'text',
                      insidetextorientation='horizontal',
                      text = ~paste( n, ' casos'),
-                     marker = list(colors = c('red','blue'),
-                                   line = list(color = '#FFFFFF', width = 1)),
+                     marker = list(colors = mla_palette[c(2, 1)],
+                                   line = list(color = '#0B1220', width = 1)),
                      #The 'pull' attribute can also be used to create space between the sectors
                      showlegend = FALSE)
       fig <- fig %>% layout(hovermode = TRUE, spikedistance =  -1,
@@ -57,7 +57,8 @@ panorama_geralServer <- function(id) {
                                           spikemode  = 'across', #toaxis, across, marker
                                           spikesnap = 'cursor', zeroline=FALSE,titlefont = list(size = 24),fixedrange=TRUE,
                                           showline=TRUE,tickfont = list(size = 24),
-                                          showgrid=TRUE))%>%
+                                          showgrid=TRUE)) %>%
+        dark_plotly() %>%
         config(displayModeBar = FALSE)
 
       fig
@@ -76,8 +77,8 @@ panorama_geralServer <- function(id) {
                      hoverinfo = 'text',
                      insidetextorientation='horizontal',
                      text = ~paste( n, ' óbitos'),
-                     marker = list(colors = c('red','blue'),
-                                   line = list(color = '#FFFFFF', width = 1)),
+                     marker = list(colors = mla_palette[c(2, 1)],
+                                   line = list(color = '#0B1220', width = 1)),
                      #The 'pull' attribute can also be used to create space between the sectors
                      showlegend = FALSE)
       fig <- fig %>% layout(hovermode = TRUE, spikedistance =  -1,
@@ -90,7 +91,8 @@ panorama_geralServer <- function(id) {
                                           spikemode  = 'across', #toaxis, across, marker
                                           spikesnap = 'cursor', zeroline=FALSE,titlefont = list(size = 24),fixedrange=TRUE,
                                           showline=TRUE,tickfont = list(size = 24),
-                                          showgrid=TRUE))%>%
+                                          showgrid=TRUE)) %>%
+        dark_plotly() %>%
         config(displayModeBar = FALSE)
 
       fig
@@ -108,8 +110,8 @@ panorama_geralServer <- function(id) {
 
 
       fig<-plot_ly(x = ~ stack_incidencias$label, y = ~ stack_incidencias$values,height= 500, mode = 'lines+markers', type="scatter",
-                   text = "", marker=list(color = "#000000", size=10, opacity=0.75),
-                   line = list(color = "#09557f", width = 4,opacity= 0.75), name = '15ª REGIONAL')
+                   text = "", marker=list(color = mla_palette[2], size=10, opacity=0.9),
+                   line = list(color = mla_palette[1], width = 4,opacity= 0.9), name = '15ª REGIONAL')
       fig <- fig %>% layout(hovermode = TRUE, spikedistance =  -1,
                             xaxis = list(title = "<b>DATAS</b>", showspikes = TRUE, titlefont = list(size = 24),
                                          spikemode  = 'across', #toaxis, across, marker
@@ -126,7 +128,7 @@ panorama_geralServer <- function(id) {
                                           showgrid=TRUE)
 
 
-      ) %>% config(displayModeBar = FALSE)
+      ) %>% dark_plotly() %>% config(displayModeBar = FALSE)
       fig
 
 
@@ -149,7 +151,7 @@ panorama_geralServer <- function(id) {
         t = 10)
 
       fig<-plot_ly(x = ~ casos$freq , y = ~ as.character(casos$label), type="bar", orientation = 'H',
-                   text = "", marker=list(color = "#09557f", size=10, opacity=0.75),
+                   text = "", marker=list(color = "#58A6FF", size=10, opacity=0.75),
                    name = 'Suscetíveis')
       fig <- fig %>% layout(hovermode = TRUE, spikedistance =  -1,
                             xaxis = list(title = "<b>NÚMERO DE CASOS</b>", showspikes = TRUE, titlefont = list(size = 24),
@@ -165,7 +167,7 @@ panorama_geralServer <- function(id) {
                                           showline=TRUE,tickfont = list(size = 16),categoryorder = "array",
                                           categoryarray = ~casos$freq,fixedrange=TRUE,
                                           showgrid=TRUE),margin = m,
-                            autosize = T) %>% config(displayModeBar = FALSE)
+                            autosize = T) %>% dark_plotly() %>% config(displayModeBar = FALSE)
       fig
 
 
@@ -190,7 +192,7 @@ panorama_geralServer <- function(id) {
         t = 10)
 
       fig<-plot_ly(x = ~ casos$freq , y = ~ as.character(casos$label), type="bar", orientation = 'H',
-                   text = "", marker=list(color = "#09557f", size=10, opacity=0.75),
+                   text = "", marker=list(color = "#58A6FF", size=10, opacity=0.75),
                    name = 'Suscetíveis')
       fig <- fig %>% layout(hovermode = TRUE, spikedistance =  -1,
                             xaxis = list(title = "<b>INCIDÊNCIA</b>", showspikes = TRUE, titlefont = list(size = 24),
@@ -208,7 +210,7 @@ panorama_geralServer <- function(id) {
                                           showgrid=TRUE),margin = m,
                             autosize = T
 
-      ) %>% config(displayModeBar = FALSE)
+      ) %>% dark_plotly() %>% config(displayModeBar = FALSE)
       fig
 
 

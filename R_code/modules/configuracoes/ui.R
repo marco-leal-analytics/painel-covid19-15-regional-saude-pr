@@ -5,42 +5,39 @@
 configuracoesUI <- function(id) {
   ns <- NS(id)
 
-  tabPanel(value = 'cog',title = tags$div(HTML('<i class="fa fa-cog"style = "color:#0072B2;font-size:30px"></i>'
-                                                   #<b style = "padding-left:10px;color:#000000;font-size:16px">CASOS POR DIA</b>'
-  )),
-                            fluidRow(
-                              box_card(title= tags$div(HTML('<i class="fas fa-cog" style = "color:#0072B2;font-size:50px"></i>
-                                                       <b style = "padding-left:25px;color:#000000;font-size:30px">CONFIGURAÇÕES</b>')),
+  tagList(
+    tags$div(class = "mla-hero module-hero",
+      tags$div(class = "hero-copy",
+        tags$span(class = "eyebrow", "15ª REGIONAL DE SAÚDE · COVID-19"),
+        tags$h1("Configurações"),
+        tags$p(class = "hero-summary",
+          "Área de inspeção dos dados que alimentam o painel: tabelas brutas de casos, incidências e população da 15ª Regional de Saúde do Paraná."
+        )
+      ),
+      tags$div(class = "hero-visual hero-mark", tags$span("CONFIGURAÇÕES"))
+    ),
 
-                                  width = 12),
-                              box_card(title= tags$div(HTML('<i class="fas fa-cog" style = "color:#0072B2;font-size:50px"></i>
-                                                       <b style = "padding-left:25px;color:#000000;font-size:30px">DADOS</b>')),
+    tags$div(class = "section",
+      tags$div(class = "section-title", "Dados"),
+      ui_card(
+        dataTableOutput(ns("dados_casos"), height = "650")
+      ),
+      ui_card(
+        pickerInput(
+          inputId = ns("select_dadoscasos"),
+          label = "Selecione qual informação deseja :",
+          choices = c("Casos Por Dia", "Casos Acumulados", "Incidências")
+        ),
+        tags$strong(textOutput(ns("dadosselecttext"))),
+        dataTableOutput(ns("tabela_qtdcasos"), height = "650")
+      )
+    ),
 
-                                  width = 12),
-
-                              dataTableOutput(ns("dados_casos"),height = "650"),
-                              box_card(title= fluidRow(column(width=2,HTML('<i class="fas fa-cog" style = "color:#0072B2;font-size:50px"></i>')),
-                                                  column(width=10,
-                                                       strong(textOutput(ns("dadosselecttext")), style = "padding-left:25px;color:#000000;font-size:30px"))),
-                                            width = 12),
-                              pickerInput(
-                                inputId = ns("select_dadoscasos"),
-                                label = "Selecione qual informação deseja :",
-                                choices = c("Casos Por Dia", "Casos Acumulados", "Incidências")),
-
-                              dataTableOutput(ns("tabela_qtdcasos"),height = "650"),
-                              # box(title= tags$div(HTML('<i class="fas fa-cog" style = "color:#0072B2;font-size:50px"></i>
-                              #                          <b style = "padding-left:25px;color:#000000;font-size:30px">ÓBITOS</b>')),
-                              #
-                              #     width = 12),
-                              # fluidRow(column(width=12,align="center",
-                              # dataTableOutput("obitos",height = "150"))),
-                              box_card(title= tags$div(HTML('<i class="fas fa-cog" style = "color:#0072B2;font-size:50px"></i>
-                                                       <b style = "padding-left:25px;color:#000000;font-size:30px">POPULAÇÃO</b>')),
-
-                                  width = 12),
-                              fluidRow(column(width=12,align="center",
-                              dataTableOutput(ns("pop_cog"),height = "400")))
-                              )
+    tags$div(class = "section",
+      tags$div(class = "section-title", "População"),
+      ui_card(
+        dataTableOutput(ns("pop_cog"), height = "400")
+      )
+    )
   )
 }

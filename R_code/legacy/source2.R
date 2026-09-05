@@ -267,13 +267,13 @@ atraso <- function(k) {
   
   
   fig<-plot_ly(x = ~ 1:nrow(b), y = ~populacao*b$S, mode = 'lines', type="scatter", visible="legendonly",
-               text = "neste dia", line = list(color = 'rgb(8,48,107)', width = 4), name = 'Suscetíveis')
+               text = "neste dia", line = list(color = mla_palette[1], width = 4), name = 'Suscetíveis')
   fig<-fig %>% add_trace(y = ~ populacao*b$E, mode = 'lines+markers', name = 'Expostos', visible=TRUE,
-                         line = list(color = 'orange', width = 4))
+                         line = list(color = mla_palette[2], width = 4))
   fig<-fig %>% add_trace(y = ~ populacao*b$I, mode = 'lines+markers', name = 'Infectados', visible=TRUE,
-                         line = list(color = 'red', width = 4), color = I("red"))
+                         line = list(color = mla_palette[3], width = 4), color = I(mla_palette[3]))
   fig<-fig %>% add_trace(y = ~ populacao*b$R, mode = 'lines', name = 'Recuperados', visible=TRUE, #dash = 'dash','dot'
-                         line = list(color = 'green', width = 4))
+                         line = list(color = mla_palette[4], width = 4))
   fig <- fig %>% layout(title = "<b>Modelo SEIR</b>", hovermode = TRUE, spikedistance =  -1,
                         xaxis = list(title = "<b>DIAS</b>", showspikes = TRUE, titlefont = list(size = 24),
                                      spikemode  = 'across', #toaxis, across, marker
@@ -365,13 +365,13 @@ b<-rbind(b,aux)
 
 
 fig<-plot_ly(x = ~ 1:nrow(b), y = ~populacao*b$S, mode = 'lines', type="scatter", visible="legendonly",
-             text = "neste dia", line = list(color = 'rgb(8,48,107)', width = 4), name = 'Suscetíveis')
+             text = "neste dia", line = list(color = mla_palette[1], width = 4), name = 'Suscetíveis')
 fig<-fig %>% add_trace(y = ~ populacao*b$E, mode = 'lines+markers', name = 'Expostos', visible=TRUE,
-                       line = list(color = 'orange', width = 4))
+                       line = list(color = mla_palette[2], width = 4))
 fig<-fig %>% add_trace(y = ~ populacao*b$I, mode = 'lines+markers', name = 'Infectados', visible=TRUE,
-                       line = list(color = 'red', width = 4), color = I("red"))
+                       line = list(color = mla_palette[3], width = 4), color = I(mla_palette[3]))
 fig<-fig %>% add_trace(y = ~ populacao*b$R, mode = 'lines', name = 'Recuperados', visible=TRUE, #dash = 'dash','dot'
-                       line = list(color = 'green', width = 4))
+                       line = list(color = mla_palette[4], width = 4))
 fig <- fig %>% layout(title = "<b>Modelo SEIR</b>", hovermode = TRUE, spikedistance =  -1,
                       xaxis = list(title = "<b>DIAS</b>", showspikes = TRUE, titlefont = list(size = 24),
                                    spikemode  = 'across', #toaxis, across, marker

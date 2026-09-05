@@ -324,9 +324,9 @@ a<-ggplot(rankrisco, aes(x = reorder(rankrisco$cidades,-rankrisco$risco), y=risc
     plot.background = element_rect(fill = "transparent", colour = NA),
     legend.background = element_rect(fill = "transparent", colour = NA),
     legend.box.background = element_rect(fill = "transparent", colour = NA)
-  ) + geom_hline(yintercept = riscomedio, #linetype="dotted", 
-                 color = "red", size=1.5) + geom_hline(yintercept = riscoalto, #linetype="dotted", 
-                                                       color = "#500000", size=1.5)
+  ) + geom_hline(yintercept = riscomedio, #linetype="dotted",
+                 color = mla_palette[4], size=1.5) + geom_hline(yintercept = riscoalto, #linetype="dotted",
+                                                       color = mla_palette[5], size=1.5)
 
 
 
@@ -424,9 +424,9 @@ a<-ggplot(rankrisco, aes(x = reorder(rankrisco$cidades,-rankrisco$risco), y=risc
     plot.background = element_rect(fill = "transparent", colour = NA),
     legend.background = element_rect(fill = "transparent", colour = NA),
     legend.box.background = element_rect(fill = "transparent", colour = NA)
-  ) + geom_hline(yintercept = riscomedio2, #linetype="dotted", 
-                 color = "red", size=1.5) + geom_hline(yintercept = riscoalto2, #linetype="dotted", 
-                                                       color = "black", size=1.5)
+  ) + geom_hline(yintercept = riscomedio2, #linetype="dotted",
+                 color = mla_palette[4], size=1.5) + geom_hline(yintercept = riscoalto2, #linetype="dotted",
+                                                       color = mla_palette[5], size=1.5)
 
 
 

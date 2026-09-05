@@ -16,6 +16,7 @@ shiny::addResourcePath("assets", file.path(project_root, "assets"))
 source(file.path(project_root, "R_code/functions.R"), encoding = "UTF-8")
 source(file.path(project_root, "R_code/constants.R"), encoding = "UTF-8")
 source(file.path(project_root, "R_code/theme.R"), encoding = "UTF-8")
+source(file.path(project_root, "R_code/components.R"), encoding = "UTF-8")
 source(file.path(project_root, "R_code/data.R"), encoding = "UTF-8")
 
 source(file.path(project_root, "R_code/modules/panorama_geral/ui.R"), encoding = "UTF-8")
