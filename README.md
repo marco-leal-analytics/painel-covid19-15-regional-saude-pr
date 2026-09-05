@@ -85,6 +85,7 @@ O projeto foi migrado de um `server.R` monolitico para modulos Shiny reais (`mod
 |   |   `-- sobre/                 # Pagina Quarto (sobre.qmd -> sobre.html), incorporada via iframe
 |   `-- legacy/                   # Scripts antigos ainda referenciados via source()
 |-- data/
+|   |-- .rscignore               # Ignora "bronze" na publicacao (shinyapps.io) - so vale para este diretorio
 |   |-- bronze/                  # Camada bronze: NAO versionada (.gitignore) nem distribuida com o projeto
 |   |   |-- dataset.csv          # Dataset principal (lido apenas pelo pipeline) - so existe localmente
 |   |   |-- dataset2.csv         # Dataset historico/alternativo (nao usado pelo pipeline/painel) - so existe localmente
@@ -104,7 +105,8 @@ O projeto foi migrado de um `server.R` monolitico para modulos Shiny reais (`mod
 |-- renv.lock                    # Manifesto reprodutivel de pacotes
 |-- renv/                        # Infraestrutura gerada pelo renv
 |-- covid_19.Rproj               # Projeto RStudio
-|-- .gitignore                   # Regras para arquivos locais e temporarios
+|-- .gitignore                   # Regras para arquivos locais e temporarios (inclui data/bronze/)
+|-- .rscignore                   # Exclui pipeline/, tokens e .RData da publicacao (shinyapps.io)
 `-- README.md
 ```
 
@@ -131,7 +133,7 @@ Os dados nao sao mais armazenados em `www/`. Essa pasta e reservada a arquivos q
 
 A leitura, limpeza e agregacao dos dados brutos acontecem **fora da aplicacao**, em um pipeline de dados no formato medallion (`pipeline/`), totalmente independente do Shiny. `R_code/data.R` nunca le `dataset.csv`, o `.xlsx` ou o `.csv` de bairros diretamente — ele so le os arquivos parquet ja prontos em `data/gold/`.
 
-> **`data/bronze/` nao faz parte do projeto sincronizado.** Essa pasta contem os arquivos brutos originais da fonte, com dado pessoal de paciente, e esta no `.gitignore` — ela existe apenas na maquina de quem roda o pipeline localmente, nunca e commitada nem distribuida junto com o repositorio. Quem clona o projeto **nao recebe** `data/bronze/`; precisa fornecer os proprios arquivos brutos (mesmos nomes/colunas/formato, ver "Fontes de dados" abaixo) para poder rodar `Rscript pipeline/run_pipeline.R`. As camadas `data/silver/` e `data/gold/` continuam versionadas no repositorio, e os dados nelas foram levemente descaracterizados antes de serem commitados (ver "Privacidade e dados sensiveis" abaixo) — quem so consome o painel (sem rodar o pipeline) usa exatamente essas camadas ja incluidas no repositorio.
+> **`data/bronze/` nao faz parte do projeto sincronizado.** Essa pasta contem os arquivos brutos originais da fonte, com dado pessoal de paciente, e esta no `.gitignore` — ela existe apenas na maquina de quem roda o pipeline localmente, nunca e commitada nem distribuida junto com o repositorio. Quem clona o projeto **nao recebe** `data/bronze/`; precisa fornecer os proprios arquivos brutos (mesmos nomes/colunas/formato, ver "Fontes de dados" abaixo) para poder rodar `Rscript pipeline/run_pipeline.R`. As camadas `data/silver/` e `data/gold/` continuam versionadas no repositorio, e os dados nelas foram levemente descaracterizados antes de serem commitados (ver "Privacidade e dados sensiveis" abaixo) — quem so consome o painel (sem rodar o pipeline) usa exatamente essas camadas ja incluidas no repositorio. `data/bronze/` tambem e bloqueada na publicacao do painel em `shinyapps.io` via `.rscignore` (ver "Publicacao (shinyapps.io / Posit Connect)" em "Seguranca e versionamento") — o `.gitignore` sozinho nao impede que ela seja enviada ao servidor de publicacao.
 
 ### Pipeline de dados (`pipeline/`)
 
@@ -343,6 +345,7 @@ Antes de abrir uma alteracao:
 8. Evite colocar datasets, scripts R ou artefatos gerados em `www/` ou `assets/`.
 9. Ao editar `R_code/modules/sobre/sobre.qmd`, renderize o documento (`quarto render sobre.qmd` dentro de `R_code/modules/sobre/`) para atualizar `sobre.html` - o modulo `sobre` serve o HTML pre-renderizado via `iframe`, entao alteracoes no `.qmd` sozinhas nao aparecem na aplicacao.
 10. Siga os padroes de UI e graficos descritos na secao "Padroes de UI e graficos" (centralizacao via `.module-shell`, legenda centralizada no topo via `dark_plotly()`, estilo do modal por cidade) ao adicionar novas abas, graficos ou modais.
+11. Antes de publicar em `shinyapps.io` (`rsconnect::deployApp()`), rode `rsconnect::listDeploymentFiles(".")` e confirme que `data/bronze/`, `pipeline/`, `.httr-oauth`, `droptoken.rds` e `.RData` nao aparecem na lista (ver "Publicacao (shinyapps.io / Posit Connect)"). Se uma nova pasta ou arquivo local/sensivel for adicionado ao projeto, avalie se ele tambem precisa entrar em `.rscignore` — `.gitignore` sozinho nao afeta o que e publicado.
 
 ## Validacao atual
 
@@ -362,6 +365,17 @@ O projeto possui credenciais legadas em `R_code/constants.R`. Elas nao devem ser
 O `.gitignore` exclui estado local do R/RStudio, tokens, caches, logs, bibliotecas do `renv`, artefatos de execucao, configuracoes de deploy e a camada bronze do pipeline de dados (`data/bronze/`, que contem dado pessoal de paciente — ver "Privacidade e dados sensiveis"). Dados necessarios para reproduzir a aplicacao devem permanecer versionados apenas quando a politica de dados do projeto permitir.
 
 > **Nota sobre historico do git**: adicionar `data/bronze/` ao `.gitignore` e remove-la do rastreamento (`git rm -r --cached`) impede que ela seja versionada em commits futuros, mas **nao apaga** os arquivos ja gravados em commits anteriores do historico do repositorio. Se `data/bronze/` (com os nomes de pacientes originais, antes da anonimizacao) ja foi commitada e publicada em algum momento, considere reescrever o historico (ex.: `git filter-repo`) e revogar/forcar novo push do repositorio remoto para remover esse dado de fato.
+
+### Publicacao (shinyapps.io / Posit Connect)
+
+O `.gitignore` so protege o repositorio git — o `rsconnect::deployApp()` usado para publicar o painel em `shinyapps.io` **nao consulta o `.gitignore`**; por padrao ele empacota todo o conteudo de `appDir` (menos uma lista fixa de exclusoes internas do pacote, como `.git`/`renv`/`.Rproj.user`). Sem uma configuracao propria, `data/bronze/` (dado pessoal de paciente), `pipeline/`, `.httr-oauth`, `droptoken.rds` e `.RData` seriam enviados ao servidor de publicacao junto com o app.
+
+Isso e controlado por arquivos `.rscignore` (mesma ideia do `.gitignore`, mas resolvidos por pacote: cada `.rscignore` lista, uma entrada por linha, nomes de arquivo/pasta **daquele mesmo diretorio** — sem wildcards e sem alcancar subpastas a partir de um nivel acima):
+
+- **`.rscignore`** (raiz do projeto) — ignora, a partir da raiz: `pipeline`, `.httr-oauth`, `droptoken.rds`, `.RData`, `.claude`, `VideoDecodeStats`.
+- **`data/.rscignore`** — ignora `bronze` a partir de `data/` (por isso a entrada fica nesse arquivo, e nao no `.rscignore` da raiz — uma entrada `data/bronze` no `.rscignore` da raiz **nao tem efeito**, pois o pacote so compara nomes dentro do diretorio onde cada `.rscignore` esta).
+
+Para conferir o que seria de fato publicado antes de rodar `rsconnect::deployApp()`, rode `rsconnect::listDeploymentFiles(".")` a partir da raiz do projeto e confirme que nada em `data/bronze/`, `pipeline/`, `.httr-oauth`, `droptoken.rds` ou `.RData` aparece na lista. `data/silver/` e `data/gold/` (ja descaracterizadas) continuam sendo publicadas normalmente, pois sao o que `R_code/data.R` le em produção.
 
 ## Licenca e responsabilidade pelos dados
 

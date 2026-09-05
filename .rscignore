@@ -1,0 +1,6 @@
+pipeline
+.httr-oauth
+droptoken.rds
+.RData
+.claude
+VideoDecodeStats
