@@ -2,7 +2,9 @@
 
 Aplicacao interativa desenvolvida em R e Shiny para apoiar o acompanhamento epidemiologico dos municipios da 15a Regional de Saude do Parana.
 
-O painel transforma registros de casos em indicadores, tabelas, mapas e graficos para analise da distribuicao e da evolucao da COVID-19. A aplicacao preserva o fluxo historico de autenticacao, navegacao por abas e visualizacao dos dados regionais.
+O painel transforma registros de casos em indicadores, tabelas, mapas e graficos para analise da distribuicao e da evolucao da COVID-19, cobrindo os 30 municipios da regional. A aplicacao preserva o fluxo historico de autenticacao, navegacao por abas e visualizacao dos dados regionais.
+
+O projeto nasceu durante a pandemia para substituir a leitura manual de planilhas eletronicas diarias por uma visao consolidada e atualizada da situacao epidemiologica. Na epoca, isso reduziu o tempo gasto pelos agentes de saude da regional compilando casos, obitos e incidencia por municipio, alem de apoiar a priorizacao por nivel de risco e a comunicacao dos resultados com gestores municipais e colaboradores.
 
 ## Objetivos
 
@@ -13,6 +15,17 @@ O painel transforma registros de casos em indicadores, tabelas, mapas e graficos
 - Exibir rankings de risco e estimativas relacionadas a propagacao da doenca.
 - Oferecer uma calculadora baseada no modelo SEIR para simulacoes exploratorias.
 - Apoiar a comunicacao dos resultados para equipes de saude e colaboradores.
+
+## O que pode ser encontrado
+
+- **Painel Geral**: indicadores consolidados de casos confirmados e obitos, distribuicao por sexo e por faixa etaria, evolucao diaria e acumulada de casos, incidencia por milhao de habitantes e comparativo entre municipios.
+- **Mapa de cidades**: mapa interativo (Leaflet) com os casos confirmados por municipio; ao clicar em uma cidade abre um painel detalhado com serie historica, incidencia, faixa etaria e indicadores de viagem.
+- **Nivel de risco**: ranking dos municipios segundo o risco estimado de aumento de casos, calculado a partir da prevalencia das infeccoes, da taxa de propagacao estimada e do tamanho da populacao.
+- **Comportamento inicial**: simulacoes de como o atraso na adocao de medidas de mitigacao ou a chegada de pessoas expostas afeta o crescimento inicial da epidemia em uma cidade escolhida.
+- **Calculadora SEIR**: simulacao da evolucao da epidemia com o modelo SEIR (Suscetiveis-Expostos-Infectados-Recuperados), ajustando populacao, taxas de propagacao, incubacao, recuperacao e valores iniciais.
+- **Colaboradores**: equipe responsavel pelo acompanhamento epidemiologico da regional e pelo desenvolvimento estatistico e computacional do painel, em parceria com os departamentos de Estatistica e Matematica da UEM.
+- **Configuracoes**: consulta aos dados brutos e as tabelas de casos e populacao utilizadas pelo painel (disponivel apos login).
+- **Sobre**: pagina Quarto (`R_code/modules/sobre/sobre.qmd`) com o objetivo, o conteudo, a organizacao e o impacto do painel.
 
 ## Tecnologias
 
@@ -38,7 +51,7 @@ A lista completa, incluindo versoes resolvidas e dependencias transitivas, esta 
 
 O ponto de entrada e `app.R`. Ele define a raiz do projeto, ativa o `renv`, carrega os pacotes, prepara os dados, monta o tema `bslib`, carrega os modulos de interface e cria o objeto `shinyApp`.
 
-O projeto foi migrado de um `server.R` monolitico para modulos Shiny reais (`moduleServer()`/`NS()`), um por aba, cada um em sua propria pasta com `ui.R` e `server.R`. Os 7 modulos (`panorama_geral`, `mapa_cidades`, `nivel_risco`, `colaboradores`, `calculadora`, `comportamento_inicial` e `configuracoes`) ja seguem esse padrao. `R_code/server.R` continua existindo, mas hoje cuida apenas do login/navegacao e das chamadas `*Server(id)` de cada modulo - nao ha mais outputs soltos de aba nesse arquivo.
+O projeto foi migrado de um `server.R` monolitico para modulos Shiny reais (`moduleServer()`/`NS()`), um por aba, cada um em sua propria pasta com `ui.R` e `server.R`. Os 8 modulos (`panorama_geral`, `mapa_cidades`, `nivel_risco`, `colaboradores`, `calculadora`, `comportamento_inicial`, `configuracoes` e `sobre`) ja seguem esse padrao. `R_code/server.R` continua existindo, mas hoje cuida apenas do login/navegacao e das chamadas `*Server(id)` de cada modulo - nao ha mais outputs soltos de aba nesse arquivo.
 
 ```text
 .
@@ -62,7 +75,8 @@ O projeto foi migrado de um `server.R` monolitico para modulos Shiny reais (`mod
 |   |   |-- colaboradores/
 |   |   |-- calculadora/
 |   |   |-- configuracoes/
-|   |   `-- comportamento_inicial/
+|   |   |-- comportamento_inicial/
+|   |   `-- sobre/                 # Pagina Quarto (sobre.qmd -> sobre.html), incorporada via iframe
 |   `-- legacy/                   # Scripts antigos ainda referenciados via source()
 |-- data/
 |   |-- dataset.csv              # Dataset principal utilizado no painel
@@ -122,7 +136,7 @@ Para atualizar os dados, substitua os arquivos mantendo os nomes, colunas espera
 
 ## Modulos do painel
 
-Todos os 7 modulos seguem o padrao `moduleServer()`/`NS()`, cada um em `R_code/modules/<nome>/{ui.R,server.R}`.
+Todos os 8 modulos seguem o padrao `moduleServer()`/`NS()`, cada um em `R_code/modules/<nome>/{ui.R,server.R}`.
 
 | Modulo | Na navegacao? | Descricao |
 |---|---|---|
@@ -130,6 +144,7 @@ Todos os 7 modulos seguem o padrao `moduleServer()`/`NS()`, cada um em `R_code/m
 | **Mapa por cidades** (`mapa_cidades`) | Sim | Mapa Leaflet, modal por cidade com casos acumulados, casos diarios, incidencia, viagem, sexo e indicadores de propagacao. |
 | **Nivel de risco** (`nivel_risco`) | Sim | Rankings por risco estimado, data de referencia e escala linear ou logaritmica; modal de ajuda com video (`showModal`/`modalDialog`). |
 | **Colaboradores** (`colaboradores`) | Sim | Informacoes institucionais das equipes participantes. Aba puramente estatica - `colaboradoresServer()` nao tem outputs proprios. |
+| **Sobre** (`sobre`) | Sim | Objetivo, conteudo, organizacao e impacto do painel. Pagina Quarto estatica (`sobre.qmd` renderizado para `sobre.html`), incorporada via `iframe`; `sobreServer()` nao tem outputs proprios. |
 | **Configuracoes** (`configuracoes`) | Condicional | Consulta dos dados brutos, tabelas de casos e populacao. So aparece apos login do usuario `mleal`, via `appendTab(inputId = "navbar", configuracoesUI("configuracoes"))` dentro do `observeEvent(input$login)` em `R_code/server.R`. |
 | **Calculadora SEIR** (`calculadora`) | Nao | Controles para populacao, periodo, taxas e estados iniciais do modelo. Modulo funcional, mas a referencia em `R_code/ui.R` (dentro do objeto `mais`) esta comentada. |
 | **Comportamento inicial** (`comportamento_inicial`) | Nao | Estimativas de atraso nas medidas de mitigacao e chegada de expostos, por cidade. Mesmo status do `calculadora`: funcional, porem fora da navegacao (referencia comentada em `mais`). |
@@ -175,6 +190,7 @@ Antes de abrir uma alteracao:
 6. Execute `renv::status()` para verificar as dependencias.
 7. Inicie o Shiny e teste as abas, filtros, tabelas, mapas, modais e autenticacao afetados.
 8. Evite colocar datasets, scripts R ou artefatos gerados em `www/` ou `assets/`.
+9. Ao editar `R_code/modules/sobre/sobre.qmd`, renderize o documento (`quarto render sobre.qmd` dentro de `R_code/modules/sobre/`) para atualizar `sobre.html` - o modulo `sobre` serve o HTML pre-renderizado via `iframe`, entao alteracoes no `.qmd` sozinhas nao aparecem na aplicacao.
 
 ## Validacao atual
 

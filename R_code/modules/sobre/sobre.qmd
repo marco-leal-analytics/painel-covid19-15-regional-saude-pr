@@ -106,6 +106,30 @@ Equipe responsável pelo acompanhamento epidemiológico da regional e pelo desen
 Painel Geral <span>→</span> Mapa de Cidades <span>→</span> Nível de Risco <span>→</span> Comportamento Inicial <span>→</span> Calculadora SEIR <span>→</span> Colaboradores
 </p>
 
+## Impacto para os agentes de saúde na época
+
+<p class="platform-section-intro">O painel foi criado durante a pandemia para responder a uma necessidade concreta das equipes da 15ª Regional de Saúde: transformar planilhas eletrônicas atualizadas manualmente, dia a dia, em uma leitura rápida e confiável da situação epidemiológica dos 30 municípios da regional.</p>
+
+::: {.insight-grid}
+::: {.insight-box}
+### Menos tempo compilando, mais tempo decidindo
+
+Antes do painel, consolidar casos, óbitos e incidência por município exigia tratar manualmente a planilha diária. Com os indicadores, gráficos e tabelas gerados automaticamente, os agentes de saúde passaram a acompanhar a evolução da doença em minutos, liberando tempo para a resposta operacional.
+:::
+
+::: {.insight-box}
+### Priorização por risco
+
+O ranking de nível de risco por município ajudou a direcionar a atenção e os recursos da regional para as cidades com maior probabilidade de aumento de casos, em vez de depender apenas da leitura isolada do número absoluto de casos.
+:::
+
+::: {.insight-box}
+### Comunicação mais clara com gestores e colaboradores
+
+Mapas, gráficos interativos e simulações (como os cenários de atraso na adoção de medidas de mitigação) tornaram mais simples explicar a situação epidemiológica e o racional por trás das recomendações para gestores municipais, colaboradores e demais equipes envolvidas no enfrentamento da pandemia.
+:::
+:::
+
 ## Origem e tratamento dos dados
 
 ::: {.insight-grid}
