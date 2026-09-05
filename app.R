@@ -26,7 +26,8 @@ source(file.path(project_root, "R_code/modules/nivel_risco/ui.R"), encoding = "U
 source(file.path(project_root, "R_code/modules/nivel_risco/server.R"), encoding = "UTF-8")
 source(file.path(project_root, "R_code/modules/colaboradores/ui.R"), encoding = "UTF-8")
 source(file.path(project_root, "R_code/modules/colaboradores/server.R"), encoding = "UTF-8")
-source(file.path(project_root, "R_code/modules/calculadora.R"), encoding = "UTF-8")
+source(file.path(project_root, "R_code/modules/calculadora/ui.R"), encoding = "UTF-8")
+source(file.path(project_root, "R_code/modules/calculadora/server.R"), encoding = "UTF-8")
 source(file.path(project_root, "R_code/modules/configuracoes.R"), encoding = "UTF-8")
 
 source(file.path(project_root, "R_code/ui.R"), encoding = "UTF-8")

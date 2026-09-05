@@ -33,7 +33,7 @@ mais <<- tabPanel( title = tags$div(HTML('<i class="fa fa-ellipsis-h"style = "co
                                                VEJA MAIS </b>')),width = 12 ),
                      tabsetPanel(
                        #comportamento_inicial,
-                       #calculadora_seir
+                       #calculadora_seirUI("calculadora")
                        )
                      )
                    )
