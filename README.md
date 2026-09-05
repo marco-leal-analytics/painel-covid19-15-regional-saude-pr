@@ -38,6 +38,7 @@ O projeto nasceu durante a pandemia para substituir a leitura manual de planilha
 - `DT` para tabelas interativas
 - `dplyr`, `tidyverse`, `stringr` e `lubridate` para tratamento dos dados
 - `readxl` para leitura da planilha populacional
+- `arrow` para leitura/escrita dos arquivos parquet do pipeline de dados (camadas prata e ouro)
 - `brazilmaps` para limites geograficos dos municipios
 - `deSolve` e `EpiDynamics` para componentes de modelagem
 - `shinyWidgets`, `shinyjs` e `shinyBS` para controles e interacoes da interface
@@ -56,16 +57,22 @@ O projeto foi migrado de um `server.R` monolitico para modulos Shiny reais (`mod
 ```text
 .
 |-- app.R                         # Bootstrap e ponto de entrada Shiny
+|-- pipeline/                     # Pipeline de dados (bronze -> prata -> ouro), EXTERNO a aplicacao
+|   |-- run_pipeline.R            # Orquestrador (Rscript pipeline/run_pipeline.R)
+|   `-- R/
+|       |-- 00_utils.R            # Normalizacao de nomes de cidade, datas, sexo, idade
+|       |-- 01_silver.R           # Le data/bronze/ (raw) -> limpeza/unificacao -> data/silver/*.parquet
+|       `-- 02_gold.R             # Le data/silver/ -> agregados prontos para o painel -> data/gold/*.parquet
 |-- assets/                       # Design system (tema bslib e estilos)
 |   |-- sass/                     # Tokens (_variables.scss, _mixins.scss, main.scss)
 |   |-- css/                      # CSS compilado adicional (app.css)
 |   `-- www/                      # Estilos e imagens complementares servidos via /assets
 |-- R_code/
-|   |-- packages.R                # Pacotes usados pela aplicacao (inclui bslib)
+|   |-- packages.R                # Pacotes usados pela aplicacao (inclui bslib, arrow)
 |   |-- functions.R               # Funcoes auxiliares reutilizaveis
 |   |-- constants.R               # Constantes, helpers de UI (ex.: box_card()) e configuracoes legadas
 |   |-- theme.R                   # Definicao do bs_theme() a partir dos tokens em assets/ (version = 5, obrigatorio)
-|   |-- data.R                    # Ingestao e preparacao dos dados
+|   |-- data.R                    # Leitura da camada ouro (data/gold/*.parquet) e montagem dos objetos do mapa
 |   |-- ui.R                      # Composicao principal da interface (fluidPage com theme = app_theme)
 |   |-- server.R                  # Login, navegacao e chamadas *Server(id) de cada modulo
 |   |-- modules/                  # Um modulo Shiny real por aba (ui.R + server.R)
@@ -79,14 +86,17 @@ O projeto foi migrado de um `server.R` monolitico para modulos Shiny reais (`mod
 |   |   `-- sobre/                 # Pagina Quarto (sobre.qmd -> sobre.html), incorporada via iframe
 |   `-- legacy/                   # Scripts antigos ainda referenciados via source()
 |-- data/
-|   |-- dataset.csv              # Dataset principal utilizado no painel
-|   |-- dataset2.csv             # Dataset historico/alternativo
-|   |-- obitos.csv               # Base auxiliar de obitos
-|   `-- auxiliary/
-|       |-- pop_municipios.xlsx  # Populacao usada na incidencia
-|       |-- latitude-longitude-bairros.csv
-|       |-- table.RData
-|       `-- F4993300
+|   |-- bronze/                  # Camada bronze: arquivos brutos no formato original (fonte)
+|   |   |-- dataset.csv          # Dataset principal (lido apenas pelo pipeline)
+|   |   |-- dataset2.csv         # Dataset historico/alternativo (nao usado pelo pipeline/painel)
+|   |   |-- obitos.csv           # Base auxiliar de obitos (nao usada pelo pipeline/painel)
+|   |   `-- auxiliary/
+|   |       |-- pop_municipios.xlsx  # Populacao usada na incidencia (lida apenas pelo pipeline)
+|   |       |-- latitude-longitude-bairros.csv
+|   |       |-- table.RData
+|   |       `-- F4993300
+|   |-- silver/                  # Camada prata: dados limpos/unificados em parquet
+|   `-- gold/                    # Camada ouro: dados agregados prontos para o painel (o que app.R le)
 |-- www/                         # Recursos publicados pelo Shiny na raiz (/)
 |   |-- styles.css, custom.css
 |   |-- code.js
@@ -106,7 +116,7 @@ O projeto foi migrado de um `server.R` monolitico para modulos Shiny reais (`mod
 3. `R_code/packages.R` carrega os pacotes da aplicacao (inclui `bslib`) e `app.R` registra `assets/` como recurso publico via `addResourcePath("assets", ...)`.
 4. `R_code/functions.R` e `R_code/constants.R` disponibilizam funcoes, helpers de UI (`box_card()`) e configuracoes.
 5. `R_code/theme.R` monta `app_theme <- bslib::bs_theme(...)` a partir dos tokens em `assets/sass/` e aplica as regras extra de `assets/sass/main.scss`.
-6. `R_code/data.R` le os arquivos de `data/` e prepara os objetos analiticos.
+6. `R_code/data.R` le os parquets ja prontos em `data/gold/` (gerados previamente pelo pipeline em `pipeline/run_pipeline.R`) e monta os objetos analiticos e de mapa consumidos pelos modulos.
 7. Os arquivos de `R_code/modules/<nome>/{ui.R,server.R}` sao carregados aos pares - cada um define `<nome>UI(id)` e `<nome>Server(id)`.
 8. `R_code/ui.R` monta a interface principal com `fluidPage(theme = app_theme, ...)`.
 9. `R_code/server.R` chama `<nome>Server(id)` de cada modulo e monta o `tabsetPanel(id = 'navbar', <nome1>UI("id1"), ...)` com as UIs; tambem cuida de login, logout e da liberacao condicional da aba "Configuracoes" via `appendTab()`.
@@ -120,19 +130,43 @@ O projeto foi migrado de um `server.R` monolitico para modulos Shiny reais (`mod
 
 Os dados nao sao mais armazenados em `www/`. Essa pasta e reservada a arquivos que o navegador precisa acessar diretamente.
 
-### Dataset principal
+A leitura, limpeza e agregacao dos dados brutos acontecem **fora da aplicacao**, em um pipeline de dados no formato medallion (`pipeline/`), totalmente independente do Shiny. `R_code/data.R` nunca le `dataset.csv`, o `.xlsx` ou o `.csv` de bairros diretamente — ele so le os arquivos parquet ja prontos em `data/gold/`.
 
-`data/dataset.csv` e a fonte principal carregada por `R_code/data.R`. O arquivo usa separador `;` e possui campos como municipio, datas, sexo, idade, viagem, obito e resultado do exame.
+### Pipeline de dados (`pipeline/`)
 
-### Dados auxiliares
+```
+data/bronze/dataset.csv                            (dado bruto, pousado, formato original)
+data/bronze/auxiliary/*.xlsx|csv
+        │  Rscript pipeline/run_pipeline.R
+        ▼
+data/silver/*.parquet   -> limpeza, tipagem e unificacao (nomes de cidade, datas, sexo, idade)
+        ▼
+data/gold/*.parquet     -> agregados prontos para consumo (o que R_code/data.R le)
+```
 
-- `data/auxiliary/pop_municipios.xlsx`: populacao municipal utilizada nos calculos de incidencia.
-- `data/auxiliary/latitude-longitude-bairros.csv`: coordenadas e identificacao de bairros.
-- `data/obitos.csv`: base auxiliar historica de obitos.
-- `data/dataset2.csv`: versao historica ou alternativa do dataset principal.
-- `data/auxiliary/table.RData` e `data/auxiliary/F4993300`: artefatos auxiliares preservados para compatibilidade e referencia.
+- **Bronze** (`data/bronze/`): os arquivos brutos em si, no formato original da fonte (`dataset.csv`, `auxiliary/pop_municipios.xlsx`, `auxiliary/latitude-longitude-bairros.csv`) — nenhuma transformacao, e o pipeline so os le, nunca os gera.
+- **Prata** (`data/silver/`): `casos.parquet`, `populacao_municipios.parquet`, `populacao_regional.parquet`, `bairros_15regional.parquet` — nomes de municipio normalizados (acentos/abreviacoes/espacos), datas convertidas, sexo/idade/obito padronizados.
+- **Ouro** (`data/gold/`): tabelas prontas para o painel — `metadados`, `casos_detalhe`, `casos_por_dia`, `incidencias`, `faixa_etaria`, `faixa_etaria_sexo`, `casos_por_sexo`, `obitos_por_municipio`, `resumo_municipios`, `populacao_municipios`, `bairros_15regional`.
 
-Para atualizar os dados, substitua os arquivos mantendo os nomes, colunas esperadas, separadores e formatos. Alteracoes no schema podem exigir ajustes em `R_code/data.R`, `R_code/server.R` e nos modulos que usam os objetos preparados.
+Rode o pipeline sempre que os arquivos em `data/bronze/` forem atualizados (substituindo o `.csv`/`.xlsx` mantendo o mesmo nome/formato):
+
+```r
+# a partir da raiz do projeto
+renv::install(c("arrow", "readxl"))   # uma vez, se ainda nao estiver instalado/no lockfile
+Rscript pipeline/run_pipeline.R
+```
+
+O pipeline usa suas proprias funcoes de normalizacao (`pipeline/R/00_utils.R`) e nao depende de nada em `R_code/` — pode ser executado, testado e agendado (ex.: cron) de forma independente da aplicacao. `pipeline/R/01_silver.R` le os arquivos de `data/bronze/` (o `dataset.csv` esta em Latin-1/Windows-1252, nao UTF-8 — a leitura ja trata essa conversao) e `pipeline/R/02_gold.R` le `data/silver/` e escreve `data/gold/`.
+
+### Fontes de dados (lidas apenas pelo pipeline)
+
+- `data/bronze/dataset.csv`: dataset principal de casos notificados. Separador `;`, codificacao Latin-1/Windows-1252, campos como municipio, datas, sexo, idade, viagem, obito e resultado do exame.
+- `data/bronze/auxiliary/pop_municipios.xlsx`: populacao municipal utilizada nos calculos de incidencia.
+- `data/bronze/auxiliary/latitude-longitude-bairros.csv`: coordenadas e identificacao de bairros (usado para a camada de bairros da 15a regional).
+- `data/bronze/obitos.csv` e `data/bronze/dataset2.csv`: arquivos historicos que nao sao mais referenciados pelo pipeline nem pelo painel; mantidos em bronze apenas como registro.
+- `data/bronze/auxiliary/table.RData` e `data/bronze/auxiliary/F4993300`: artefatos auxiliares preservados para compatibilidade e referencia (nao utilizados).
+
+Para atualizar os dados, substitua os arquivos em `data/bronze/` mantendo nomes, colunas esperadas, separadores e formatos, e rode `Rscript pipeline/run_pipeline.R` novamente. Alteracoes de schema podem exigir ajustes em `pipeline/R/01_silver.R`/`02_gold.R` e, se novos objetos forem necessarios, em `R_code/data.R`.
 
 ## Modulos do painel
 
@@ -166,12 +200,14 @@ Na raiz do projeto, execute no R ou RStudio:
 ```r
 install.packages("renv")
 renv::restore()
+renv::install("arrow")   # ainda nao esta no renv.lock; necessario para o pipeline e para R_code/data.R
+Rscript pipeline/run_pipeline.R   # gera data/bronze, data/silver e data/gold
 shiny::runApp()
 ```
 
-Ou abra `app.R` no RStudio e execute a aplicacao pelo botao **Run App**.
+Ou abra `app.R` no RStudio e execute a aplicacao pelo botao **Run App** (depois de rodar o pipeline pelo menos uma vez).
 
-O comando `renv::restore()` instala as versoes registradas em `renv.lock`. Em uma maquina nova, a restauracao pode exigir ferramentas de compilacao ou bibliotecas do sistema para pacotes espaciais como `sf`.
+O comando `renv::restore()` instala as versoes registradas em `renv.lock`. Em uma maquina nova, a restauracao pode exigir ferramentas de compilacao ou bibliotecas do sistema para pacotes espaciais como `sf`. Depois de instalar `arrow`, rode `renv::snapshot()` para registra-lo no lockfile (ver "Reproducibilidade").
 
 ## Reproducibilidade
 
@@ -188,9 +224,9 @@ Nao versione `renv/library/`, caches ou bibliotecas locais. O arquivo `renv.lock
 
 Antes de abrir uma alteracao:
 
-1. Confirme que os dados esperados existem em `data/`.
+1. Confirme que os parquets esperados existem em `data/gold/` (rode `Rscript pipeline/run_pipeline.R` se `data/dataset.csv` ou os arquivos em `data/auxiliary/` tiverem mudado).
 2. Preserve os IDs de inputs e outputs usados pela interface e pelo servidor - todos os modulos usam IDs namespaced (`ns("id")` no `ui.R`, lidos como `input$id`/`output$id` dentro do `moduleServer` correspondente).
-3. Mantenha a ingestao de dados em `R_code/data.R` e a apresentacao nos modulos.
+3. Mantenha a ingestao/limpeza/agregacao de dados em `pipeline/` (nunca leia CSV/xlsx bruto em `R_code/`) - `R_code/data.R` so le `data/gold/*.parquet` e monta a apresentacao para os modulos.
 4. Ao criar ou alterar um modulo: use `box_card()` (helper compartilhado em `R_code/constants.R`) em vez de `shinydashboard::box()`, namespaced todo `*Output(...)`/`inputId` com `ns()` no `ui.R`, use `getwd()` (nunca `project_root`) em qualquer `source()` interno ao `server.R` do modulo, e **nao use `shinyBS::bsModal()`/`toggleModal()`** - use `shiny::showModal(shiny::modalDialog(...))`, disparado por um `observeEvent()` no botao (veja `nivel_risco` como referencia).
 5. Nao baixe a versao do `bs_theme()` em `R_code/theme.R` para resolver algum componente legado quebrado - `bslib::card()` exige Bootstrap 5+. Troque o componente incompativel por um equivalente nativo do Shiny em vez de mexer na versao do tema.
 6. Execute `renv::status()` para verificar as dependencias.

@@ -5,7 +5,7 @@
 panorama_geralServer <- function(id) {
   moduleServer(id, function(input, output, session) {
 
-    output$table_populacao <- renderDataTable(as.data.frame(populacao_municipio,row.names = F),
+    output$table_populacao <- renderDataTable(populacao_municipio,
                                               options = list(
                                                 pageLength = 10,
                                                 scrollX=TRUE,
@@ -19,7 +19,7 @@ panorama_geralServer <- function(id) {
                                               )
     )
 
-    output$table_populacao2 <- renderDataTable(as.data.frame(populacao_municipio,row.names = F),
+    output$table_populacao2 <- renderDataTable(populacao_municipio,
                                                options = list(
                                                  pageLength = 10,
                                                  scrollX=TRUE,
