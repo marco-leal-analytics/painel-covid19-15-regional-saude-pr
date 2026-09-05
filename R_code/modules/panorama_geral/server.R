@@ -99,6 +99,76 @@ panorama_geralServer <- function(id) {
 
     })
 
+    output$plot_faixa_etaria <- renderPlotly({
+
+      fig <- plot_ly(x = ~ faixa_etaria$label_datas, y = ~ faixa_etaria$REGIONAL, type = "bar",
+                     text = "", marker = list(color = mla_palette[1], opacity = 0.9),
+                     name = "Casos confirmados")
+      fig <- fig %>% layout(hovermode = TRUE, spikedistance =  -1,
+                            xaxis = list(title = "<b>FAIXA ETÁRIA</b>", showspikes = TRUE, titlefont = list(size = 24),
+                                         spikemode  = 'across', spikesnap = 'cursor',  ticks = "outside",
+                                         showline=TRUE,tickfont = list(size = 24),fixedrange=TRUE,
+                                         showgrid=TRUE),
+                            yaxis = list (title = "<b>NÚMERO DE CASOS</b>",
+                                          spikemode  = 'across', spikesnap = 'cursor', zeroline=FALSE,
+                                          titlefont = list(size = 24),fixedrange=TRUE,
+                                          showline=TRUE,tickfont = list(size = 24),
+                                          showgrid=TRUE)) %>%
+        dark_plotly() %>%
+        config(displayModeBar = FALSE)
+
+      fig
+
+    })
+
+    output$plot_casos_por_dia <- renderPlotly({
+
+      fig <- plot_ly(x = ~ data_casos$label_datas, y = ~ data_casos$REGIONAL, type = "bar",
+                     text = "", marker = list(color = mla_palette[1], opacity = 0.9),
+                     name = "Casos confirmados")
+      fig <- fig %>% layout(hovermode = TRUE, spikedistance =  -1,
+                            xaxis = list(title = "<b>DATAS</b>", showspikes = TRUE, titlefont = list(size = 24),
+                                         spikemode  = 'across', spikesnap = 'cursor',  ticks = "outside",tickangle = -45,
+                                         showline=TRUE,tickfont = list(size = 24),type = 'date',
+                                         tickformat = "%d/%m",fixedrange=TRUE,
+                                         showgrid=TRUE),
+                            yaxis = list (title = "<b>NÚMERO DE CASOS</b>",
+                                          spikemode  = 'across', spikesnap = 'cursor', zeroline=FALSE,
+                                          titlefont = list(size = 24),fixedrange=TRUE,
+                                          showline=TRUE,tickfont = list(size = 24),
+                                          showgrid=TRUE)) %>%
+        dark_plotly() %>%
+        config(displayModeBar = FALSE)
+
+      fig
+
+    })
+
+    output$plot_casos_acumulados <- renderPlotly({
+
+      casos_acumulados <- cumsum(data_casos$REGIONAL)
+
+      fig <- plot_ly(x = ~ data_casos$label_datas, y = ~ casos_acumulados, mode = 'lines+markers', type = "scatter",
+                     text = "", marker = list(color = mla_palette[2], size = 8, opacity = 0.9),
+                     line = list(color = mla_palette[1], width = 4, opacity = 0.9), name = "Casos acumulados")
+      fig <- fig %>% layout(hovermode = TRUE, spikedistance =  -1,
+                            xaxis = list(title = "<b>DATAS</b>", showspikes = TRUE, titlefont = list(size = 24),
+                                         spikemode  = 'across', spikesnap = 'cursor',  ticks = "outside",tickangle = -45,
+                                         showline=TRUE,tickfont = list(size = 24),type = 'date',
+                                         tickformat = "%d/%m",fixedrange=TRUE,
+                                         showgrid=TRUE),
+                            yaxis = list (title = "<b>NÚMERO DE CASOS</b>",
+                                          spikemode  = 'across', spikesnap = 'cursor', zeroline=FALSE,
+                                          titlefont = list(size = 24),fixedrange=TRUE,
+                                          showline=TRUE,tickfont = list(size = 24),
+                                          showgrid=TRUE)) %>%
+        dark_plotly() %>%
+        config(displayModeBar = FALSE)
+
+      fig
+
+    })
+
     output$plot_incidencia_regional <- renderPlotly({
       stack_incidencias           <- stack(incidencias)
       label                       <- rep(datas,length(colnames(incidencias[2:32])))

@@ -40,9 +40,25 @@ panorama_geralUI <- function(id) {
         kpi_card(obitos[1], "Óbitos confirmados")
     ),
 
-    div(class = "kpi-grid",
-        ui_card(title = "Distribuição por sexo · Casos", plotlyOutput(ns("plot_pie_sexo"))),
-        ui_card(title = "Distribuição por sexo · Óbitos", plotlyOutput(ns("plot_pie_obito_sexo")))
+    tags$div(class = "section",
+      tags$div(class = "section-title", "Análise descritiva por faixa etária e por sexo"),
+      div(class = "kpi-grid",
+          ui_card(title = "Distribuição por sexo · Casos", plotlyOutput(ns("plot_pie_sexo"))),
+          ui_card(title = "Distribuição por sexo · Óbitos", plotlyOutput(ns("plot_pie_obito_sexo")))
+      ),
+      ui_card(title = "Casos confirmados por faixa etária", plotlyOutput(ns("plot_faixa_etaria")))
+    ),
+
+    tags$div(class = "section",
+      tags$div(class = "section-title", "Evolução diária de casos confirmados"),
+      div(class = "two-col-row",
+        div(class = "two-col-item",
+            ui_card(title = "Casos confirmados por dia", plotlyOutput(ns("plot_casos_por_dia")))
+        ),
+        div(class = "two-col-item",
+            ui_card(title = "Casos confirmados acumulados", plotlyOutput(ns("plot_casos_acumulados")))
+        )
+      )
     ),
 
     tags$div(class = "section",
