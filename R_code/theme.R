@@ -2,6 +2,12 @@
 ######################################## TEMA GLOBAL (bslib) #################################################
 ################################################################################################################
 # Tokens espelhados de assets/sass/_variables.scss (design system pessoal do autor)
+# version = 5 obrigatorio: bslib::card()/card_header()/card_body() (usados em
+# box_card(), o helper que substitui shinydashboard::box() em todos os
+# modulos ja migrados) exigem Bootstrap 5+. NAO baixar essa versao - qualquer
+# componente que dependa de JS do Bootstrap 3/4 (ex.: shinyBS::bsModal) deve
+# ser trocado por um equivalente nativo do Shiny (shiny::showModal/modalDialog),
+# em vez de tentar reverter o Bootstrap.
 
 app_theme <- bslib::bs_theme(
   version     = 5,

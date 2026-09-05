@@ -4,6 +4,19 @@
 
 nivel_riscoServer <- function(id) {
   moduleServer(id, function(input, output, session) {
+    ns <- session$ns
+
+    # bsModal (shinyBS) dependia do jQuery/data-toggle do Bootstrap 3-4 e nao
+    # abre sob o bs_theme(version = 5) do bslib. Trocado pelo modal nativo do
+    # Shiny (showModal/modalDialog), que funciona em qualquer versao do Bootstrap.
+    observeEvent(input$Id113, {
+      showModal(modalDialog(
+        title = "No vídeo abaixo apresentamos uma análise do nível de risco.",
+        uiOutput(ns("video")),
+        size = "l",
+        easyClose = TRUE
+      ))
+    })
 
     output$rankrisco <- renderPlotly({
 

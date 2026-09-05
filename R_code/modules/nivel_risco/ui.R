@@ -83,8 +83,6 @@ nivel_riscoUI <- function(id) {
                                                    label = "Precisa de ajuda?",
                                                    style = "jelly",
                                                    color = "primary")),column(1)),
-                                                 bsModal(ns("modalExample"), "No vídeo abaixo apresentamos uma análise
-                                                 do nível de risco.", ns("Id113"), size = "large",uiOutput(ns("video"))),
                                                  plotlyOutput(ns("rankrisco"))),
 
                                         tabPanel("Risco estimado do aumento de casos relativo ao tamanho da população", plotlyOutput(ns("rankriscorelativo")))))))
