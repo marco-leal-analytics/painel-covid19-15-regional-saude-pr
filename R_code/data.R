@@ -58,7 +58,6 @@ data_list <- list("Casos por dia" = data_casos, "Incidências" = incidencias)
 dataset1 <- data.frame(
   notifica       = casos_detalhe$NOTIFICA,
   cidade         = tolower(casos_detalhe$CIDADE_CHAVE),
-  nome           = casos_detalhe$NOME,
   idade          = casos_detalhe$IDADE,
   sexo           = casos_detalhe$SEXO,
   viajem         = casos_detalhe$VIAJEM,

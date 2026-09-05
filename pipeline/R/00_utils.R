@@ -118,6 +118,22 @@ normalize_sim_nao <- function(x) {
   toupper(trimws(as.character(x)))
 }
 
+# Normaliza o campo de viagem/contato para um categorico estrito "SIM"/"NAO"/NA.
+# Na planilha de origem esse campo veio preenchido, em parte dos registros,
+# como anotacao clinica livre (ex.: "CONTATO MARIA FULANA CRESS FALECIDA POR
+# COVID", "sim Bruna Pizolito") em vez de um valor binario simples — o que
+# pode embutir nome de terceiros (contatos) no texto. A aplicacao so consome
+# esse campo como indicador binario (grafico de viajou/nao viajou em
+# R_code/legacy/source.R), entao a camada prata ja entrega a versao
+# normalizada, sem preservar o texto livre original.
+normalize_viagem <- function(x) {
+  x_flat <- toupper(trimws(gsub("[\r\n]+", " ", as.character(x))))
+  out <- rep(NA_character_, length(x))
+  vazio <- is.na(x) | x_flat == ""
+  out[!vazio] <- ifelse(grepl("NAO", x_flat[!vazio]), "NAO", "SIM")
+  out
+}
+
 ensure_dir <- function(path) {
   if (!dir.exists(path)) dir.create(path, recursive = TRUE)
   invisible(path)

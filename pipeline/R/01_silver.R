@@ -28,14 +28,18 @@ build_silver <- function(bronze_dir, silver_dir) {
   )
 
   log_step("PRATA: limpando e unificando casos notificados")
+  # NOME nao e trazido para a camada prata: e dado pessoal identificavel e a
+  # aplicacao nunca precisou dele (nenhuma tela exibe nome de paciente).
+  # VIAJEM e normalizado para um categorico SIM/NAO/NA (ver normalize_viagem())
+  # em vez de preservar o texto livre da planilha de origem, que em parte dos
+  # registros embutia anotacoes clinicas e, ocasionalmente, nome de terceiros.
   casos <- data.frame(
     NOTIFICA = parse_data_br(casos_bronze$notifica),
     CIDADE = resolve_municipio(casos_bronze$cidade),
     CIDADE_CHAVE = municipio_chave_app(resolve_municipio(casos_bronze$cidade)),
-    NOME = trimws(casos_bronze$nome),
     IDADE = parse_idade(casos_bronze$idade),
     SEXO = normalize_sexo(casos_bronze$sexo),
-    VIAJEM = casos_bronze$viajem,
+    VIAJEM = normalize_viagem(casos_bronze$viajem),
     OBITO = normalize_sim_nao(casos_bronze$obito),
     COLETA = parse_data_br(casos_bronze$coleta),
     RESULTADOCOVID = trimws(casos_bronze$resultadocovid),

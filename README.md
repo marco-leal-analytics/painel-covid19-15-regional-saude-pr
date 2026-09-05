@@ -175,13 +175,14 @@ Funcoes puras, sem efeitos colaterais, reutilizadas por `01_silver.R` e `02_gold
 | `parse_idade(x)` | string de idade suja (ex.: `"57 anos"`) -> `numeric` | Extrai o primeiro token numerico do campo. |
 | `normalize_sexo(x)` | string livre -> `"M"`, `"F"` ou `NA` | Classifica pelo primeiro caractere (`^M`/`^F`), maiusculizado. |
 | `normalize_sim_nao(x)` | string livre -> `"SIM"`/`"NAO"` (maiusculas, sem espaco) | Usado para o campo de obito. |
+| `normalize_viagem(x)` | texto livre -> `"SIM"`/`"NAO"`/`NA` | Reduz o campo de viagem/contato a um categorico binario (`grepl("NAO", ...)`, mesma regra de `R_code/legacy/source.R`). Existe por motivo de privacidade — ver "Privacidade e dados sensiveis" abaixo. |
 | `ensure_dir(path)` | caminho -> cria o diretorio se nao existir | Usado antes de escrever cada camada (`silver_dir`, `gold_dir`). |
 | `log_step(...)` | `sprintf(...)` -> mensagem com timestamp no console | Log padronizado de cada etapa do pipeline. |
 
 ### `pipeline/R/01_silver.R` — `build_silver(bronze_dir, silver_dir)`
 
 1. Le `dataset.csv` (Latin-1/Windows-1252, separador `;`), `auxiliary/pop_municipios.xlsx` (aba `Planilha1`) e `auxiliary/latitude-longitude-bairros.csv` (UTF-8, separador `;`).
-2. Constroi a tabela `casos`: converte `notifica`/`coleta` com `parse_data_br()`, resolve `cidade` com `resolve_municipio()` + `municipio_chave_app()`, idade com `parse_idade()`, sexo com `normalize_sexo()`, obito com `normalize_sim_nao()`; quando falta `NOTIFICA`, usa a data de `COLETA` (mesma regra da aplicacao original). Grava `casos.parquet`.
+2. Constroi a tabela `casos`: converte `notifica`/`coleta` com `parse_data_br()`, resolve `cidade` com `resolve_municipio()` + `municipio_chave_app()`, idade com `parse_idade()`, sexo com `normalize_sexo()`, obito com `normalize_sim_nao()`, viagem/contato com `normalize_viagem()`; quando falta `NOTIFICA`, usa a data de `COLETA` (mesma regra da aplicacao original). O campo `nome` da planilha de origem **nao e copiado** para a tabela `casos` (dado pessoal identificavel, nunca usado pela aplicacao). Grava `casos.parquet`.
 3. Separa a primeira linha da planilha de populacao (total "15 RS") do restante (`populacao_regional` x `populacao_municipios`), resolve o nome/chave de cada municipio e grava `populacao_municipios.parquet` e `populacao_regional.parquet`.
 4. Filtra os bairros do arquivo de coordenadas para `uf == "PR"` e municipios da 15a regional, resolve o nome do municipio e grava `bairros_15regional.parquet`.
 
@@ -198,10 +199,9 @@ Le as quatro tabelas da camada prata e escreve as tabelas de consumo do painel: 
 | `NOTIFICA` | `Date` | Data de notificacao do caso; quando ausente na origem, recebe a data de `COLETA`. |
 | `CIDADE` | `character` | Nome do municipio, forma canonica com acento (ex.: `"Doutor Camargo"`). |
 | `CIDADE_CHAVE` | `character` | Chave compacta do municipio (ex.: `"doutorcamargo"`), usada para join/filtro. |
-| `NOME` | `character` | Nome do paciente, sem espacos nas pontas. |
 | `IDADE` | `numeric` | Idade extraida do campo de origem (`parse_idade()`). |
 | `SEXO` | `character` | `"M"`, `"F"` ou `NA`. |
-| `VIAJEM` | `character` | Indicador de viagem, como gravado na origem. |
+| `VIAJEM` | `character` | `"SIM"`, `"NAO"` ou `NA` (`normalize_viagem()`). Ver nota de privacidade abaixo. |
 | `OBITO` | `character` | `"SIM"`/`"NAO"` (padronizado). |
 | `COLETA` | `Date` | Data de coleta do exame. |
 | `RESULTADOCOVID` | `character` | Resultado do exame, sem espacos nas pontas. |
@@ -262,6 +262,13 @@ Todas as tabelas "largas" abaixo (`casos_por_dia`, `incidencias`, `faixa_etaria`
 - `data/bronze/auxiliary/table.RData` e `data/bronze/auxiliary/F4993300`: artefatos auxiliares preservados para compatibilidade e referencia (nao utilizados).
 
 Para atualizar os dados, substitua os arquivos em `data/bronze/` mantendo nomes, colunas esperadas, separadores e formatos, e rode `Rscript pipeline/run_pipeline.R` novamente. Alteracoes de schema podem exigir ajustes em `pipeline/R/01_silver.R`/`02_gold.R` e, se novos objetos forem necessarios, em `R_code/data.R`.
+
+### Privacidade e dados sensiveis
+
+- **`data/bronze/` nao e mais versionado.** A pasta contem os arquivos brutos como chegam da fonte (incluindo dado pessoal de paciente) e foi adicionada ao `.gitignore` — ela existe apenas localmente em cada maquina/ambiente que roda o pipeline; nenhum commit novo deve incluir arquivos dessa pasta. Os arquivos `data/bronze/dataset.csv`, `data/bronze/dataset2.csv` e `data/bronze/obitos.csv` traziam nomes reais de pacientes na coluna `nome`/`nome do paciente` — em parte dos registros de `dataset.csv`, esse campo chegou a conter texto livre com endereco, telefone e observacoes clinicas em vez de apenas o nome. Esses valores foram substituidos por um pseudonimo posicional (`PACIENTE_00001`, `PACIENTE_00002`, ...) diretamente nos arquivos locais; nenhuma outra coluna foi alterada.
+- **As camadas prata e ouro (`data/silver/`, `data/gold/`) continuam versionadas, mas sem dado pessoal identificavel.** A tabela `casos` (`pipeline/R/01_silver.R`) nunca copia o campo `nome` da planilha de origem. O campo `viajem`/`VIAJEM`, que na origem tambem podia trazer anotacoes de texto livre (e, ocasionalmente, nome de terceiros/contatos), e reduzido pelo pipeline a um categorico `"SIM"`/`"NAO"`/`NA` (`normalize_viagem()` em `pipeline/R/00_utils.R`) antes de chegar a `casos.parquet`/`casos_detalhe.parquet` — o texto original nunca e persistido.
+- Nenhum CPF, RG, telefone, endereco ou outro identificador direto foi encontrado nas fontes de dados (`data/bronze/auxiliary/*`) alem do que foi descrito acima.
+- Se novas colunas forem adicionadas as fontes de origem no futuro, avalie antes de propaga-las para `data/silver/`/`data/gold/` se elas carregam dado pessoal — nesse caso, normalize/anonimize ou descarte o campo em `pipeline/R/01_silver.R`, no mesmo padrao usado para `nome` e `viajem`.
 
 ## Modulos do painel
 
@@ -342,7 +349,9 @@ Durante a inicializacao podem aparecer avisos de pacotes carregados previamente 
 
 O projeto possui credenciais legadas em `R_code/constants.R`. Elas nao devem ser reutilizadas em novos ambientes ou publicacoes. O recomendado e migrar usuarios e senhas para variaveis de ambiente ou um mecanismo externo de autenticacao.
 
-O `.gitignore` exclui estado local do R/RStudio, tokens, caches, logs, bibliotecas do `renv`, artefatos de execucao e configuracoes de deploy. Dados necessarios para reproduzir a aplicacao devem permanecer versionados apenas quando a politica de dados do projeto permitir.
+O `.gitignore` exclui estado local do R/RStudio, tokens, caches, logs, bibliotecas do `renv`, artefatos de execucao, configuracoes de deploy e a camada bronze do pipeline de dados (`data/bronze/`, que contem dado pessoal de paciente — ver "Privacidade e dados sensiveis"). Dados necessarios para reproduzir a aplicacao devem permanecer versionados apenas quando a politica de dados do projeto permitir.
+
+> **Nota sobre historico do git**: adicionar `data/bronze/` ao `.gitignore` e remove-la do rastreamento (`git rm -r --cached`) impede que ela seja versionada em commits futuros, mas **nao apaga** os arquivos ja gravados em commits anteriores do historico do repositorio. Se `data/bronze/` (com os nomes de pacientes originais, antes da anonimizacao) ja foi commitada e publicada em algum momento, considere reescrever o historico (ex.: `git filter-repo`) e revogar/forcar novo push do repositorio remoto para remover esse dado de fato.
 
 ## Licenca e responsabilidade pelos dados
 

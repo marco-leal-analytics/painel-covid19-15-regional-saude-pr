@@ -32,3 +32,9 @@ Thumbs.db
 
 # Generated analysis outputs
 R/legacy/output/
+
+# Camada bronze do pipeline de dados: pouso dos arquivos brutos originais da
+# fonte (dados pessoais de pacientes). Nao deve ser versionada nem compartilhada
+# via git - mantenha esses arquivos apenas localmente. As camadas silver/gold
+# (data/silver/, data/gold/) continuam versionadas normalmente.
+data/bronze/
