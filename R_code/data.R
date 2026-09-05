@@ -171,6 +171,15 @@ item  <- which(rm_accent(colnames(data_casos)) %in% rm_accent(lista_cidade)[pos_
 
 faixa_etaria[,item] <- teste
 
+# CASOS POR Faixa Etaria x Sexo (REGIONAL) -----------------------
+faixa_etaria_sexo               <- as.data.frame(table(
+  faixa = cut(as.numeric(dados2$IDADE), breaks = c(0,10,19,41,61,81,150), right = FALSE, labels = label_faixa_etaria),
+  sexo  = dados2$SEXO
+))
+colnames(faixa_etaria_sexo)     <- c("faixa_etaria","sexo","casos")
+faixa_etaria_sexo               <- faixa_etaria_sexo[faixa_etaria_sexo$sexo %in% c("F","M"),]
+faixa_etaria_sexo$sexo          <- factor(faixa_etaria_sexo$sexo, levels = c("F","M"), labels = c("FEMININO","MASCULINO"))
+
 # INCIDENCIAS -----------------------
 
 

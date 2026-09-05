@@ -121,6 +121,34 @@ panorama_geralServer <- function(id) {
 
     })
 
+    output$plot_faixa_etaria_sexo <- renderPlotly({
+
+      dados_feminino  <- faixa_etaria_sexo[faixa_etaria_sexo$sexo == "FEMININO",]
+      dados_masculino <- faixa_etaria_sexo[faixa_etaria_sexo$sexo == "MASCULINO",]
+
+      fig <- plot_ly(x = ~ dados_feminino$faixa_etaria, y = ~ dados_feminino$casos, type = "bar",
+                     text = "", marker = list(color = mla_palette[2], opacity = 0.9),
+                     name = "FEMININO")
+      fig <- fig %>% add_trace(x = ~ dados_masculino$faixa_etaria, y = ~ dados_masculino$casos,
+                               marker = list(color = mla_palette[1], opacity = 0.9),
+                               name = "MASCULINO")
+      fig <- fig %>% layout(hovermode = TRUE, spikedistance =  -1, barmode = "group",
+                            xaxis = list(title = "<b>FAIXA ETÁRIA</b>", showspikes = TRUE, titlefont = list(size = 24),
+                                         spikemode  = 'across', spikesnap = 'cursor',  ticks = "outside",
+                                         showline=TRUE,tickfont = list(size = 24),fixedrange=TRUE,
+                                         showgrid=TRUE),
+                            yaxis = list (title = "<b>NÚMERO DE CASOS</b>",
+                                          spikemode  = 'across', spikesnap = 'cursor', zeroline=FALSE,
+                                          titlefont = list(size = 24),fixedrange=TRUE,
+                                          showline=TRUE,tickfont = list(size = 24),
+                                          showgrid=TRUE)) %>%
+        dark_plotly() %>%
+        config(displayModeBar = FALSE)
+
+      fig
+
+    })
+
     output$plot_casos_por_dia <- renderPlotly({
 
       fig <- plot_ly(x = ~ data_casos$label_datas, y = ~ data_casos$REGIONAL, type = "bar",

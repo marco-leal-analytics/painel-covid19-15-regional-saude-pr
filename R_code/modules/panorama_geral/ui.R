@@ -46,7 +46,8 @@ panorama_geralUI <- function(id) {
           ui_card(title = "Distribuição por sexo · Casos", plotlyOutput(ns("plot_pie_sexo"))),
           ui_card(title = "Distribuição por sexo · Óbitos", plotlyOutput(ns("plot_pie_obito_sexo")))
       ),
-      ui_card(title = "Casos confirmados por faixa etária", plotlyOutput(ns("plot_faixa_etaria")))
+      ui_card(title = "Casos confirmados por faixa etária", plotlyOutput(ns("plot_faixa_etaria"))),
+      ui_card(title = "Casos confirmados por faixa etária e sexo", plotlyOutput(ns("plot_faixa_etaria_sexo")))
     ),
 
     tags$div(class = "section",
