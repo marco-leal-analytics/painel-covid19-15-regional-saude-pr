@@ -151,9 +151,14 @@ panorama_geralServer <- function(id) {
 
     output$plot_casos_por_dia <- renderPlotly({
 
+      media_movel_7d <- as.numeric(stats::filter(data_casos$REGIONAL, filter = rep(1 / 7, 7), sides = 1))
+
       fig <- plot_ly(x = ~ data_casos$label_datas, y = ~ data_casos$REGIONAL, type = "bar",
                      text = "", marker = list(color = mla_palette[1], opacity = 0.9),
                      name = "Casos confirmados")
+      fig <- fig %>% add_trace(x = ~ data_casos$label_datas, y = ~ media_movel_7d, type = "scatter",
+                               mode = "lines", line = list(color = mla_palette[5], width = 3),
+                               marker = NULL, name = "Média móvel (7 dias)")
       fig <- fig %>% layout(hovermode = TRUE, spikedistance =  -1,
                             xaxis = list(title = "<b>DATAS</b>", showspikes = TRUE, titlefont = list(size = 24),
                                          spikemode  = 'across', spikesnap = 'cursor',  ticks = "outside",tickangle = -45,
