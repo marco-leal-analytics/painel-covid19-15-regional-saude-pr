@@ -108,7 +108,7 @@ mapa_cidadesServer <- function(id) {
           title = NULL,
           btn_labels = NA,
           showCloseButton = TRUE,
-          text = fluidRow(column(width=12, mapa_cidades_panelUI(id),espaco_html(4))),
+          text = fluidRow(column(width=12, mapa_cidades_panelUI(id))),
           html = TRUE,
           width = "95%")
       }
@@ -157,7 +157,7 @@ mapa_cidadesServer <- function(id) {
           pos_reg <- which(stack_casos$ind == "REGIONAL")
           stack_casos <- stack_casos[c(which(stack_casos$ind == message)),]
 
-          fig<-plot_ly(x = ~ stack_casos$label, y = ~ cumsum(stack_casos$values),height=500, mode = 'lines+markers',
+          fig<-plot_ly(x = ~ stack_casos$label, y = ~ cumsum(stack_casos$values),height=340, mode = 'lines+markers',
                        type="scatter",
                        text = "", marker=list(color = mla_palette[1], size=9, opacity=0.75),
                        line = list(color = mla_palette[1], width = 4,opacity= 0.75))
@@ -195,7 +195,7 @@ mapa_cidadesServer <- function(id) {
           pos_reg <- which(stack_casos$ind == "REGIONAL")
           stack_casos <- stack_casos[c(which(stack_casos$ind == message)),]
 
-          fig<-plot_ly(x = ~ stack_casos$label, y = ~ stack_casos$values, type="bar",height= 500,
+          fig<-plot_ly(x = ~ stack_casos$label, y = ~ stack_casos$values, type="bar",height= 340,
                        text = "", marker=list(color = mla_palette[2], size=10, opacity=0.75))
           fig <- fig %>% layout(hovermode = TRUE, spikedistance =  -1,
                                 xaxis = list(title = "<b>DATAS</b>", showspikes = TRUE, titlefont = list(size = 24),
@@ -235,7 +235,7 @@ mapa_cidadesServer <- function(id) {
 
 
 
-          fig<-plot_ly(x = ~ stack_incidencias[,1], y = ~ stack_incidencias[,2], mode = 'lines+markers', type="scatter",height= 500,
+          fig<-plot_ly(x = ~ stack_incidencias[,1], y = ~ stack_incidencias[,2], mode = 'lines+markers', type="scatter",height= 340,
                        text = "", marker=list(color = mla_palette[1], size=9, opacity=0.75),
                        line = list(color = mla_palette[1], width = 4,opacity= 0.75), name = colnames(stack_incidencias)[2]) %>%
             add_trace(y = ~stack_incidencias[,3], name = colnames(stack_incidencias)[3], line = list(color = mla_palette[5], width = 4),
@@ -274,7 +274,7 @@ mapa_cidadesServer <- function(id) {
           y          <- faixa_etaria[,message];y
 
 
-          fig<-plot_ly( y = ~ x, x = ~ y, type="bar",orientation = 'h',height= 500,
+          fig<-plot_ly( y = ~ x, x = ~ y, type="bar",orientation = 'h',height= 340,
                         text = "", marker=list(color = mla_palette[2], size=10, opacity=0.75),
                         name = 'Suscetíveis')
           fig <- fig %>% layout(hovermode = TRUE, spikedistance =  -1,
@@ -548,7 +548,7 @@ mapa_cidadesServer <- function(id) {
                                                 spikesnap = 'cursor', zeroline=FALSE,titlefont = list(size = 24),
                                                 showline=TRUE,tickfont = list(size = 24),fixedrange=TRUE,
                                                 showgrid=TRUE),
-                                  height= 500,
+                                  height= 340,
                                   plot_bgcolor  = "rgba(0, 0, 0, 0)",
                                   paper_bgcolor = "rgba(0, 0, 0, 0)",
                                   fig_bgcolor   = "rgba(0, 0, 0, 0)") %>%
@@ -723,7 +723,7 @@ mapa_cidadesServer <- function(id) {
                                                 spikesnap = 'cursor', zeroline=FALSE,titlefont = list(size = 24),
                                                 showline=TRUE,tickfont = list(size = 24),fixedrange=TRUE,
                                                 showgrid=TRUE),
-                                  height= 500,
+                                  height= 340,
                                   plot_bgcolor  = "rgba(0, 0, 0, 0)",
                                   paper_bgcolor = "rgba(0, 0, 0, 0)",
                                   fig_bgcolor   = "rgba(0, 0, 0, 0)") %>%

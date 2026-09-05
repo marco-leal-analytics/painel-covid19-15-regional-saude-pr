@@ -30,12 +30,12 @@ ui <- page_navbar(
       sep = "\n"
     )))
   ),
-  nav_panel("Painel Geral", panorama_geralUI("panorama")),
-  nav_panel("Mapa de Cidades", mapa_cidadesUI("mapa")),
-  nav_panel("Nível de Risco", nivel_riscoUI("nivel_risco")),
-  nav_panel("Comportamento Inicial", comportamento_inicialUI("comportamento_inicial")),
-  nav_panel("Calculadora SEIR", calculadora_seirUI("calculadora")),
-  nav_panel("Colaboradores", colaboradoresUI("colaboradores")),
-  nav_panel("Configurações", configuracoesUI("configuracoes")),
+  nav_panel("Painel Geral", tags$div(class = "module-shell", panorama_geralUI("panorama"))),
+  nav_panel("Mapa de Cidades", tags$div(class = "module-shell", mapa_cidadesUI("mapa"))),
+  nav_panel("Nível de Risco", tags$div(class = "module-shell", nivel_riscoUI("nivel_risco"))),
+  nav_panel("Comportamento Inicial", tags$div(class = "module-shell", comportamento_inicialUI("comportamento_inicial"))),
+  nav_panel("Calculadora SEIR", tags$div(class = "module-shell", calculadora_seirUI("calculadora"))),
+  nav_panel("Colaboradores", tags$div(class = "module-shell", colaboradoresUI("colaboradores"))),
+  nav_panel("Configurações", tags$div(class = "module-shell", configuracoesUI("configuracoes"))),
   nav_panel("Sobre", sobreUI("sobre"))
 )

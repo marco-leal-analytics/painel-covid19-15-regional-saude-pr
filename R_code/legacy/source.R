@@ -57,7 +57,7 @@ if (nrow(dadoscity) < 1) {numberofrow<-0  } else {
       
       fig <- plot_ly(viajem, x = ~ viajem$datas, y = ~ viajem$naoviajou, type = 'bar', name = 'Não Viajou', marker = list(color = 'rgb(8,48,107)'))
       fig <- fig %>% add_trace(y = ~ viajem$viajou, name = 'Viajou', marker = list(color = 'rgb(58,200,225)'))#cor verde da página #18BC9C
-      fig <- fig %>%  layout(hovermode = TRUE, spikedistance =  -1, barmode = 'stack',height= 500,
+      fig <- fig %>%  layout(hovermode = TRUE, spikedistance =  -1, barmode = 'stack',height= 340,
                              xaxis = list(title = "<b>DIA DA COLETA DO EXAME</b>", showspikes = TRUE, titlefont = list(size = 24),
                                           spikemode  = 'across', #toaxis, across, marker
                                           spikesnap = 'cursor',  ticks = "outside",tickangle = -45,
@@ -137,7 +137,7 @@ if (nrow(dadoscity) < 1) {numberofrow<-0  } else {
     
     
     
-    fig <- plot_ly(viajem, x = ~ viajem$datas, y = ~ viajem$naoviajou, type = 'bar', name = 'Não Viajou', marker = list(color = 'rgb(8,48,107)'),height= 500)
+    fig <- plot_ly(viajem, x = ~ viajem$datas, y = ~ viajem$naoviajou, type = 'bar', name = 'Não Viajou', marker = list(color = 'rgb(8,48,107)'),height= 340)
     fig <- fig %>% add_trace(y = ~ viajem$viajou, name = 'Viajou ou teve contato', marker = list(color = 'rgb(58,200,225)'))
     fig <- fig %>% layout(hovermode = TRUE, spikedistance =  -1, barmode = 'stack',
                           xaxis = list(title = "<b>DIA DA COLETA DO EXAME</b>", showspikes = TRUE, titlefont = list(size = 24),
@@ -252,7 +252,7 @@ taxaevol<-function(x){
     
     
     fig <- plot_ly(
-      x = dadosfinal$time[10:nrow(dadosfinal)],height= 500,
+      x = dadosfinal$time[10:nrow(dadosfinal)],height= 340,
       y = taxa,
       type = "scatter",
       mode = "lines+markers",

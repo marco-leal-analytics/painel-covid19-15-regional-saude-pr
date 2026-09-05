@@ -59,14 +59,14 @@ mapa_cidades_panelUI <- function(id) {
     )
   )
 
-  tagList(
+  tags$div(class = "mla-modal-panel",
     fluidRow(column(width = 12, align = "center", tags$h3(strong(textOutput(ns("painel_text")))))),
     navset_card_tab(id = ns("tabset"),
-      nav_panel("Casos confirmados acumulados", plotlyOutput(ns("plot_gcidades"))),
-      nav_panel("Casos por dia", plotlyOutput(ns("plot_por_dia_municipio"))),
+      nav_panel("Casos confirmados acumulados", plotlyOutput(ns("plot_gcidades"), height = 340)),
+      nav_panel("Casos por dia", plotlyOutput(ns("plot_por_dia_municipio"), height = 340)),
       nav_panel("Casos com viagem", uiOutput(ns("u1"))),
-      nav_panel("Incidência", plotlyOutput(ns("plot_incidencia_municipios"))),
-      nav_panel("Faixa etária", plotlyOutput(ns("plot_por_faixaetaria_municipio"))),
+      nav_panel("Incidência", plotlyOutput(ns("plot_incidencia_municipios"), height = 340)),
+      nav_panel("Faixa etária", plotlyOutput(ns("plot_por_faixaetaria_municipio"), height = 340)),
       nav_panel("Sexo", uiOutput(ns("plot_sexo_municipio"))),
       numero_reproducao,
       taxa_propagacao,

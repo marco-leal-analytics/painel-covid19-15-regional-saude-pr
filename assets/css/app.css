@@ -239,6 +239,16 @@ tbody tr:last-child td { border-bottom: 0; }
 .py-4 { padding-top: var(--mla-space-4); padding-bottom: var(--mla-space-4); }
 .no-wrap { white-space: normal; }
 
+/* Modal por cidade (mapa de cidades) - evita barra de rolagem: limita a altura
+   do popup do SweetAlert e mantém os gráficos/cards dentro do espaço visível. */
+.swal2-popup { max-height: 92vh; padding: var(--mla-space-4) var(--mla-space-5); }
+.swal2-html-container { max-height: calc(92vh - 6rem); margin: 0 !important; overflow-y: auto; overflow-x: hidden; }
+.mla-modal-panel { width: 100%; }
+.mla-modal-panel .card { margin-bottom: 0; }
+.mla-modal-panel .card-body { padding: var(--mla-space-3) var(--mla-space-4); }
+.mla-modal-panel .kpi-grid { margin: var(--mla-space-3) 0; }
+.mla-modal-panel h3 { margin: 0 0 var(--mla-space-3); font-size: var(--mla-text-xl); }
+
 @media (max-width: 900px) {
   .mla-hero { grid-template-columns: 1fr; }
   .kpi-grid, .metric-grid, .result-grid, .projects-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }

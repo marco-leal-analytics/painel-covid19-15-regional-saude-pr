@@ -43,6 +43,10 @@ panorama_geralUI <- function(id) {
     tags$div(class = "section",
       tags$div(class = "section-title", "Análise descritiva por faixa etária e por sexo"),
       div(class = "kpi-grid",
+          kpi_card(casos_sexo[2,1], "Casos confirmados · Masculino"),
+          kpi_card(casos_sexo[1,1], "Casos confirmados · Feminino")
+      ),
+      div(class = "kpi-grid",
           ui_card(title = "Distribuição por sexo · Casos", plotlyOutput(ns("plot_pie_sexo"))),
           ui_card(title = "Distribuição por sexo · Óbitos", plotlyOutput(ns("plot_pie_obito_sexo")))
       ),
