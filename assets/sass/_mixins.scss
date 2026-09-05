@@ -1,0 +1,34 @@
+// Mixins for cards, gradients and responsive utilities
+@mixin card-base {
+  background: $surface-1;
+  color: $text-high;
+  border-radius: $radius;
+  box-shadow: $shadow-1;
+  padding: $space-4;
+}
+
+@mixin gradient-edge($color) {
+  background: linear-gradient(135deg, rgba(255,255,255,0.02), rgba(255,255,255,0));
+  border: 1px solid rgba(255,255,255,0.02);
+  position: relative;
+  &::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    box-shadow: 0 6px 30px rgba($color, 0.08);
+    pointer-events: none;
+  }
+}
+
+@mixin responsive-grid($cols) {
+  display: grid;
+  grid-template-columns: repeat($cols, 1fr);
+  gap: $space-4;
+  @media (max-width: $bp-md) {
+    grid-template-columns: repeat(max(1, $cols / 2), 1fr);
+  }
+  @media (max-width: $bp-sm) {
+    grid-template-columns: 1fr;
+  }
+}

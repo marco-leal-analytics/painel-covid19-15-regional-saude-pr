@@ -12,13 +12,18 @@ if (file.exists(file.path(project_root, "renv/activate.R"))) {
 }
 
 source(file.path(project_root, "R_code/packages.R"), encoding = "UTF-8")
+shiny::addResourcePath("assets", file.path(project_root, "assets"))
 source(file.path(project_root, "R_code/functions.R"), encoding = "UTF-8")
 source(file.path(project_root, "R_code/constants.R"), encoding = "UTF-8")
+source(file.path(project_root, "R_code/theme.R"), encoding = "UTF-8")
 source(file.path(project_root, "R_code/data.R"), encoding = "UTF-8")
 
-source(file.path(project_root, "R_code/modules/panorama_geral.R"), encoding = "UTF-8")
-source(file.path(project_root, "R_code/modules/mapa_cidades.R"), encoding = "UTF-8")
-source(file.path(project_root, "R_code/modules/nivel_risco.R"), encoding = "UTF-8")
+source(file.path(project_root, "R_code/modules/panorama_geral/ui.R"), encoding = "UTF-8")
+source(file.path(project_root, "R_code/modules/panorama_geral/server.R"), encoding = "UTF-8")
+source(file.path(project_root, "R_code/modules/mapa_cidades/ui.R"), encoding = "UTF-8")
+source(file.path(project_root, "R_code/modules/mapa_cidades/server.R"), encoding = "UTF-8")
+source(file.path(project_root, "R_code/modules/nivel_risco/ui.R"), encoding = "UTF-8")
+source(file.path(project_root, "R_code/modules/nivel_risco/server.R"), encoding = "UTF-8")
 source(file.path(project_root, "R_code/modules/colaboradores.R"), encoding = "UTF-8")
 source(file.path(project_root, "R_code/modules/calculadora.R"), encoding = "UTF-8")
 source(file.path(project_root, "R_code/modules/configuracoes.R"), encoding = "UTF-8")

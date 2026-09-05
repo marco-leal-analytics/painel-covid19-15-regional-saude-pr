@@ -1,0 +1,60 @@
+// Design tokens (SASS) for marco-leal-analytics
+// Colors (dark-first)
+$color-primary: #3B82F6;
+$color-secondary: #7C3AED;
+$color-accent: #06B6D4;
+$color-success: #10B981;
+$color-warning: #F59E0B;
+$color-error: #EF4444;
+$color-info: #60A5FA;
+
+$surface-1: #0B1220; // cards
+$surface-2: #0F1724; // panels
+$text-high: #E6EEF8;
+$text-medium: #AAB6C8;
+$muted: #6B7280;
+$divider: rgba(255,255,255,0.06);
+
+// Interactive tokens
+$color-link: #06B6D4;
+$color-hover: rgba(59,130,246,0.14); // subtle hover overlay of primary
+$color-active: #2563EB;
+
+// Charts default palette (categorical)
+$chart-1: #06B6D4;
+$chart-2: #3B82F6;
+$chart-3: #7C3AED;
+$chart-4: #F59E0B;
+$chart-5: #10B981;
+$chart-6: #EF4444;
+$chart-7: #94A3B8;
+
+// Light mode equivalents (fallbacks)
+$color-primary-light: #2563EB;
+$surface-1-light: #FFFFFF;
+$surface-2-light: #F8FAFC;
+$text-high-light: #0F1724;
+
+// Spacing scale (base 4px)
+$space-1: 4px;
+$space-2: 8px;
+$space-3: 12px;
+$space-4: 16px;
+$space-5: 24px;
+$space-6: 32px;
+$space-8: 48px;
+
+// Radii and shadows
+$radius: 10px;
+$shadow-1: 0 6px 18px rgba(2,6,23,0.6);
+
+// Typography tokens
+$font-family-sans: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial;
+$font-family-heading: 'Merriweather', 'Poppins', serif;
+$font-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace;
+
+// Breakpoints
+$bp-sm: 576px;
+$bp-md: 768px;
+$bp-lg: 992px;
+$bp-xl: 1200px;

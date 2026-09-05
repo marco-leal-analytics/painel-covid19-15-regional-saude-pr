@@ -18,7 +18,8 @@ O painel transforma registros de casos em indicadores, tabelas, mapas e graficos
 
 - R 4.x
 - Shiny
-- Shiny Dashboard e Shiny Dashboard Plus
+- `bslib` para o tema visual (Bootstrap 5, cores, tipografia e componentes `card`)
+- Shiny Dashboard e Shiny Dashboard Plus (componentes legados, em migracao para `bslib`)
 - `plotly` para graficos interativos
 - `leaflet` e `sf` para mapas e dados espaciais
 - `DT` para tabelas interativas
@@ -28,33 +29,41 @@ O painel transforma registros de casos em indicadores, tabelas, mapas e graficos
 - `deSolve` e `EpiDynamics` para componentes de modelagem
 - `shinyWidgets`, `shinyjs` e `shinyBS` para controles e interacoes da interface
 - `ggplot2`, `gganimate` e `gifski` para visualizacoes e animacoes
+- `sass` para compilar as regras de tema definidas em `assets/sass/`
 - `renv` para reproducibilidade das dependencias
 
 A lista completa, incluindo versoes resolvidas e dependencias transitivas, esta em `renv.lock`.
 
 ## Arquitetura
 
-O ponto de entrada e `app.R`. Ele define a raiz do projeto, ativa o `renv`, carrega os pacotes, prepara os dados, carrega os modulos de interface e cria o objeto `shinyApp`.
+O ponto de entrada e `app.R`. Ele define a raiz do projeto, ativa o `renv`, carrega os pacotes, prepara os dados, monta o tema `bslib`, carrega os modulos de interface e cria o objeto `shinyApp`.
+
+O projeto esta em migracao incremental de um `server.R` monolitico para modulos Shiny reais (`moduleServer()`/`NS()`), um por aba, cada um em sua propria pasta com `ui.R` e `server.R`. Ate o momento, **panorama_geral**, **mapa_cidades** e **nivel_risco** ja seguem esse padrao; **colaboradores**, **calculadora**, **configuracoes** e **comportamento_inicial** ainda estao no formato legado (um unico arquivo com um objeto `tabPanel` global e outputs soltos em `server.R`) e serao convertidos nas proximas etapas.
 
 ```text
 .
 |-- app.R                         # Bootstrap e ponto de entrada Shiny
+|-- assets/                       # Design system (tema bslib e estilos)
+|   |-- sass/                     # Tokens (_variables.scss, _mixins.scss, main.scss)
+|   |-- css/                      # CSS compilado adicional (app.css)
+|   `-- www/                      # Estilos e imagens complementares servidos via /assets
 |-- R_code/
-|   |-- packages.R                # Pacotes usados pela aplicacao
+|   |-- packages.R                # Pacotes usados pela aplicacao (inclui bslib)
 |   |-- functions.R               # Funcoes auxiliares reutilizaveis
-|   |-- constants.R               # Constantes, temas e configuracoes legadas
+|   |-- constants.R               # Constantes, helpers de UI (ex.: box_card()) e configuracoes legadas
+|   |-- theme.R                   # Definicao do bs_theme() a partir dos tokens em assets/
 |   |-- data.R                    # Ingestao e preparacao dos dados
-|   |-- ui.R                      # Composicao principal da interface
-|   |-- server.R                  # Logica reativa e outputs
+|   |-- ui.R                      # Composicao principal da interface (fluidPage com theme = app_theme)
+|   |-- server.R                  # Logica reativa e outputs das abas ainda nao modularizadas
 |   |-- modules/                  # Componentes das abas do painel
-|   |   |-- panorama_geral.R
-|   |   |-- mapa_cidades.R
-|   |   |-- nivel_risco.R
-|   |   |-- colaboradores.R
-|   |   |-- calculadora.R
-|   |   |-- configuracoes.R
-|   |   `-- comportamento_inicial.R
-|   `-- legacy/                   # Scripts antigos mantidos para referencia
+|   |   |-- panorama_geral/       # ui.R + server.R (modulo Shiny real)
+|   |   |-- mapa_cidades/         # ui.R + server.R (modulo Shiny real)
+|   |   |-- nivel_risco/          # ui.R + server.R (modulo Shiny real)
+|   |   |-- colaboradores.R       # legado (a converter)
+|   |   |-- calculadora.R         # legado (a converter)
+|   |   |-- configuracoes.R       # legado (a converter)
+|   |   `-- comportamento_inicial.R # legado (a converter)
+|   `-- legacy/                   # Scripts antigos ainda referenciados via source()
 |-- data/
 |   |-- dataset.csv              # Dataset principal utilizado no painel
 |   |-- dataset2.csv             # Dataset historico/alternativo
@@ -64,7 +73,7 @@ O ponto de entrada e `app.R`. Ele define a raiz do projeto, ativa o `renv`, carr
 |       |-- latitude-longitude-bairros.csv
 |       |-- table.RData
 |       `-- F4993300
-|-- www/                         # Recursos publicados pelo Shiny
+|-- www/                         # Recursos publicados pelo Shiny na raiz (/)
 |   |-- styles.css, custom.css
 |   |-- code.js
 |   |-- footer.html
@@ -80,13 +89,16 @@ O ponto de entrada e `app.R`. Ele define a raiz do projeto, ativa o `renv`, carr
 
 1. `app.R` identifica a raiz do projeto e configura `data_dir`.
 2. O ambiente `renv` e ativado quando `renv/activate.R` esta disponivel.
-3. `R_code/packages.R` carrega os pacotes da aplicacao.
-4. `R_code/functions.R` e `R_code/constants.R` disponibilizam funcoes e configuracoes.
-5. `R_code/data.R` le os arquivos de `data/` e prepara os objetos analiticos.
-6. Os arquivos de `R_code/modules/` constroem as abas e componentes da interface.
-7. `R_code/ui.R` monta a interface principal.
-8. `R_code/server.R` registra reatividade, tabelas, graficos, mapas, login e navegacao.
-9. `shinyApp(ui = ui, server = server)` inicia a aplicacao.
+3. `R_code/packages.R` carrega os pacotes da aplicacao (inclui `bslib`) e `app.R` registra `assets/` como recurso publico via `addResourcePath("assets", ...)`.
+4. `R_code/functions.R` e `R_code/constants.R` disponibilizam funcoes, helpers de UI (`box_card()`) e configuracoes.
+5. `R_code/theme.R` monta `app_theme <- bslib::bs_theme(...)` a partir dos tokens em `assets/sass/` e aplica as regras extra de `assets/sass/main.scss`.
+6. `R_code/data.R` le os arquivos de `data/` e prepara os objetos analiticos.
+7. Os arquivos de `R_code/modules/` (pastas com `ui.R`/`server.R` para os modulos ja migrados, ou arquivo unico para os legados) constroem as abas e componentes da interface.
+8. `R_code/ui.R` monta a interface principal com `fluidPage(theme = app_theme, ...)`.
+9. `R_code/server.R` registra a reatividade das abas ainda nao modularizadas, chama `*Server(id)` dos modulos ja convertidos, e cuida de login e navegacao.
+10. `shinyApp(ui = ui, server = server)` inicia a aplicacao.
+
+> Nota sobre `source()` dentro de `server.R`: como o Shiny executa `app.R` em um ambiente proprio (nao o `.GlobalEnv`) e os `source()` internos de `app.R` avaliam o conteudo no `.GlobalEnv` por padrao, qualquer caminho de arquivo usado dentro de `server.R`/modulos deve ser construido com `getwd()` (jamais com a variavel `project_root`, que so existe no escopo do proprio `app.R`).
 
 ## Dados
 
@@ -108,13 +120,17 @@ Para atualizar os dados, substitua os arquivos mantendo os nomes, colunas espera
 
 ## Modulos do painel
 
-- **Panorama geral**: indicadores regionais, casos, obitos, sexo, faixa etaria e incidencia.
-- **Mapa por cidades**: mapas municipais, casos acumulados, casos diarios, incidencia, viagem, sexo e indicadores de propagacao.
-- **Nivel de risco**: rankings por risco estimado, data de referencia e escala linear ou logaritmica.
-- **Colaboradores**: informacoes institucionais das equipes participantes.
-- **Configuracoes**: consulta dos dados brutos, tabelas de casos e populacao; acesso condicionado ao usuario autorizado.
-- **Calculadora SEIR**: controles para populacao, periodo, taxas e estados iniciais do modelo.
-- **Comportamento inicial**: modulo historico mantido em `R_code/modules/`, atualmente fora da navegacao principal.
+| Modulo | Status | Descricao |
+|---|---|---|
+| **Panorama geral** (`panorama_geral`) | Migrado (`moduleServer`/`NS`) | Indicadores regionais, casos, obitos, sexo, faixa etaria e incidencia. |
+| **Mapa por cidades** (`mapa_cidades`) | Migrado (`moduleServer`/`NS`) | Mapa Leaflet, modal por cidade com casos acumulados, casos diarios, incidencia, viagem, sexo e indicadores de propagacao. |
+| **Nivel de risco** (`nivel_risco`) | Migrado (`moduleServer`/`NS`) | Rankings por risco estimado, data de referencia e escala linear ou logaritmica. |
+| **Colaboradores** | Legado | Informacoes institucionais das equipes participantes. |
+| **Configuracoes** | Legado | Consulta dos dados brutos, tabelas de casos e populacao; acesso condicionado ao usuario autorizado. |
+| **Calculadora SEIR** | Legado | Controles para populacao, periodo, taxas e estados iniciais do modelo. |
+| **Comportamento inicial** | Legado, fora da navegacao | Modulo historico mantido em `R_code/modules/`, nao esta ligado a nenhuma aba visivel atualmente. |
+
+Nos modulos ja migrados, cada `ui.R` expoe uma funcao `<nome>UI(id)` (usada em `server.R` dentro do `tabsetPanel(id = 'navbar', ...)`) e cada `server.R` expoe `<nome>Server(id)` (chamada uma vez dentro de `server <- function(input, output, session) {...}`). O `mapa_cidades` tem uma peculiaridade: o painel exibido no modal ao clicar numa cidade vem de uma segunda funcao, `mapa_cidades_panelUI(id)`, chamada a partir do proprio `server.R` do modulo (e nao do `ui.R` principal), pois o conteudo do modal e montado dinamicamente no clique.
 
 ## Instalacao e execucao
 
@@ -146,20 +162,20 @@ Nao versione `renv/library/`, caches ou bibliotecas locais. O arquivo `renv.lock
 Antes de abrir uma alteracao:
 
 1. Confirme que os dados esperados existem em `data/`.
-2. Preserve os IDs de inputs e outputs usados pela interface e pelo servidor.
+2. Preserve os IDs de inputs e outputs usados pela interface e pelo servidor. Nos modulos ja migrados, os IDs sao namespaced (`ns("id")` no `ui.R`); em modulos legados, os IDs ainda sao globais e compartilhados com `server.R`.
 3. Mantenha a ingestao de dados em `R_code/data.R` e a apresentacao nos modulos.
-4. Execute `renv::status()` para verificar as dependencias.
-5. Inicie o Shiny e teste as abas, filtros, tabelas, mapas e autenticacao afetados.
-6. Evite colocar datasets, scripts R ou artefatos gerados em `www/`.
+4. Ao converter um modulo legado para o padrao `ui.R`/`server.R`: crie a pasta `R_code/modules/<nome>/`, troque `shinydashboard::box()` por `box_card()` (helper compartilhado em `R_code/constants.R`), namespaced todos os `*Output(...)` com `ns()`, use `getwd()` (nunca `project_root`) em qualquer `source()` interno, e atualize `app.R` (source dos dois arquivos), `R_code/server.R` (chamada `<nome>Server(id)` e troca do objeto global por `<nome>UI(id)` no `tabsetPanel`).
+5. Execute `renv::status()` para verificar as dependencias.
+6. Inicie o Shiny e teste as abas, filtros, tabelas, mapas e autenticacao afetados.
+7. Evite colocar datasets, scripts R ou artefatos gerados em `www/` ou `assets/`.
 
 ## Validacao atual
 
 A estrutura reorganizada foi validada com:
 
-- parse dos arquivos R do bootstrap e dos componentes principais;
-- verificacao dos caminhos de dados;
-- inicializacao do servidor Shiny;
-- requisicao HTTP local com resposta `200`;
+- parse (`parse()`) de todos os arquivos R do bootstrap, do tema e dos modulos;
+- inicializacao real do servidor Shiny (`shiny::runApp`) e requisicao HTTP local com resposta `200`;
+- testes isolados de UI e servidor com `shiny::testServer()` para cada modulo migrado (`panorama_geral`, `mapa_cidades`, `nivel_risco`), incluindo simulacao de cliques no mapa e troca de escala Linear/Logaritmica no ranking de risco;
 - verificacao de consistencia do ambiente `renv`.
 
 Durante a inicializacao podem aparecer avisos de pacotes carregados previamente pelo ambiente local do R e avisos de deprecacao de componentes visuais. Eles nao impedem a execucao do painel.

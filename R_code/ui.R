@@ -62,13 +62,17 @@ ui <- tagList(
   }
   }"))),
   tags$style(type = "text/css", '.logo{ filter: invert(3);}'),
-  fluidPage(theme = "styles.css",
-            
+  fluidPage(theme = app_theme,
+
             ## Include Google Analytics
             #tags$head(includeHTML(("google-analytics.html"))),
-            
+
             ## add favicon
             tags$head(tags$link(rel = "icon", href = "favicon.ico")),
+            tags$head(
+              tags$link(rel = "stylesheet", href = "assets/css/app.css"),
+              tags$link(rel = "stylesheet", href = "assets/www/custom.css")
+            ),
             
             tagList(
               

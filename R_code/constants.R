@@ -153,7 +153,7 @@ title <- tags$a(href='http://www.des.uem.br/',
                 "DES/UEM",target="_blank",style = "line-height:0px;padding-top:0px;padding-left:0px;")
 
 
-css <<- tags$head(tags$style(HTML('
+shinydashboard_css <<- tags$head(tags$style(HTML('
 
                                 /* body */
                                 .content-wrapper, .right-side {
@@ -177,10 +177,22 @@ border-top-color:#666666;
 espaco<<- div(br(),br(),br(),br(),br(),br(),br(),br())
 
 espaco_html <<- function(n=6){
-  
-  
+
+
   return(HTML( rep("<br>",n)))
-  
-  
+
+
+}
+
+# Helper compartilhado entre módulos: substitui shinydashboard::box() por
+# bslib::card(), mantendo a mesma assinatura de chamada (title =, width =
+# ignorado, ... = corpo do card). Usado na conversão incremental para bslib.
+box_card <<- function(title = NULL, ..., width = NULL) {
+  body_content <- list(...)
+  card_body_el <- if (length(body_content) > 0) do.call(bslib::card_body, body_content) else NULL
+  bslib::card(
+    if (!is.null(title)) bslib::card_header(title),
+    card_body_el
+  )
 }
 
