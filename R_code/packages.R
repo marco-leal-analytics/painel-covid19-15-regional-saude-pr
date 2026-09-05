@@ -30,6 +30,7 @@ library(shinyBS)
 library(markdown)
 library(knitr)
 library(DT)
+library(shinycssloaders)
 #library(rdrop2)
 
 

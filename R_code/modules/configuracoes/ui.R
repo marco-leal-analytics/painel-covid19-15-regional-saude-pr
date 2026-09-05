@@ -20,7 +20,7 @@ configuracoesUI <- function(id) {
     tags$div(class = "section",
       tags$div(class = "section-title", "Dados"),
       ui_card(
-        dataTableOutput(ns("dados_casos"), height = "650")
+        withSpinner(dataTableOutput(ns("dados_casos"), height = "650"))
       ),
       ui_card(
         pickerInput(
@@ -29,14 +29,14 @@ configuracoesUI <- function(id) {
           choices = c("Casos Por Dia", "Casos Acumulados", "Incidências")
         ),
         tags$strong(textOutput(ns("dadosselecttext"))),
-        dataTableOutput(ns("tabela_qtdcasos"), height = "650")
+        withSpinner(dataTableOutput(ns("tabela_qtdcasos"), height = "650"))
       )
     ),
 
     tags$div(class = "section",
       tags$div(class = "section-title", "População"),
       ui_card(
-        dataTableOutput(ns("pop_cog"), height = "400")
+        withSpinner(dataTableOutput(ns("pop_cog"), height = "400"))
       )
     )
   )

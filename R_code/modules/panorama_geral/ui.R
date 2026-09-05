@@ -15,7 +15,7 @@ panorama_geralUI <- function(id) {
       tags$a(href = "https://www.ibge.gov.br/cidades-e-estados.html?view=municipio", target = "_blank", "IBGE"),
       " (consulta em 02/06/2020)."
     ),
-    dataTableOutput(ns("table_populacao"))
+    withSpinner(dataTableOutput(ns("table_populacao")))
   )
 
   tagList(
@@ -47,21 +47,21 @@ panorama_geralUI <- function(id) {
           kpi_card(casos_sexo[1,1], "Casos confirmados · Feminino")
       ),
       div(class = "kpi-grid",
-          ui_card(title = "Distribuição por sexo · Casos", plotlyOutput(ns("plot_pie_sexo"))),
-          ui_card(title = "Distribuição por sexo · Óbitos", plotlyOutput(ns("plot_pie_obito_sexo")))
+          ui_card(title = "Distribuição por sexo · Casos", withSpinner(plotlyOutput(ns("plot_pie_sexo")))),
+          ui_card(title = "Distribuição por sexo · Óbitos", withSpinner(plotlyOutput(ns("plot_pie_obito_sexo"))))
       ),
-      ui_card(title = "Casos confirmados por faixa etária", plotlyOutput(ns("plot_faixa_etaria"))),
-      ui_card(title = "Casos confirmados por faixa etária e sexo", plotlyOutput(ns("plot_faixa_etaria_sexo")))
+      ui_card(title = "Casos confirmados por faixa etária", withSpinner(plotlyOutput(ns("plot_faixa_etaria")))),
+      ui_card(title = "Casos confirmados por faixa etária e sexo", withSpinner(plotlyOutput(ns("plot_faixa_etaria_sexo"))))
     ),
 
     tags$div(class = "section",
       tags$div(class = "section-title", "Evolução diária de casos confirmados"),
       div(class = "two-col-row",
         div(class = "two-col-item",
-            ui_card(title = "Casos confirmados por dia", plotlyOutput(ns("plot_casos_por_dia")))
+            ui_card(title = "Casos confirmados por dia", withSpinner(plotlyOutput(ns("plot_casos_por_dia"))))
         ),
         div(class = "two-col-item",
-            ui_card(title = "Casos confirmados acumulados", plotlyOutput(ns("plot_casos_acumulados")))
+            ui_card(title = "Casos confirmados acumulados", withSpinner(plotlyOutput(ns("plot_casos_acumulados"))))
         )
       )
     ),
@@ -69,7 +69,7 @@ panorama_geralUI <- function(id) {
     tags$div(class = "section",
       tags$div(class = "section-title", "Incidência por milhão de habitante"),
       ui_card(
-        plotlyOutput(ns("plot_incidencia_regional"), height = 500),
+        withSpinner(plotlyOutput(ns("plot_incidencia_regional"), height = 500)),
         footer = tagList(
           tags$details(
             tags$summary("Sobre o coeficiente de incidência"),
@@ -86,11 +86,11 @@ panorama_geralUI <- function(id) {
           div(class = "two-col-row",
             div(class = "two-col-item",
                 tags$div(class = "section-subtitle", "Número de casos por cidade"),
-                plotlyOutput(ns("plot_numero_casos_cidades"), height = qtd_cidade * 50)
+                withSpinner(plotlyOutput(ns("plot_numero_casos_cidades"), height = qtd_cidade * 50))
             ),
             div(class = "two-col-item",
                 tags$div(class = "section-subtitle", "Incidência por milhão de habitante"),
-                plotlyOutput(ns("plot_incidencia_cidades"), height = qtd_cidade * 50)
+                withSpinner(plotlyOutput(ns("plot_incidencia_cidades"), height = qtd_cidade * 50))
             )
           ),
           tags$p(class = "section-small",

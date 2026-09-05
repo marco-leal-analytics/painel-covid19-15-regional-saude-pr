@@ -112,10 +112,10 @@ nivel_riscoUI <- function(id) {
             ),
             column(1)
           ),
-          plotlyOutput(ns("rankrisco"))
+          withSpinner(plotlyOutput(ns("rankrisco")))
         ),
         nav_panel("Risco relativo ao tamanho da população",
-          plotlyOutput(ns("rankriscorelativo"))
+          withSpinner(plotlyOutput(ns("rankriscorelativo")))
         )
       )
     )

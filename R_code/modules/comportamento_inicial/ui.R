@@ -70,10 +70,10 @@ comportamento_inicialUI <- function(id) {
             ),
             tags$p(class = "section-small", tags$em("São considerados 2 infectados e 3 expostos no início.")),
             navset_card_tab(
-              nav_panel("15 dias", plotlyOutput(ns("atraso15"))),
-              nav_panel("30 dias", plotlyOutput(ns("atraso30"))),
-              nav_panel("45 dias", plotlyOutput(ns("atraso45"))),
-              nav_panel("60 dias", plotlyOutput(ns("atraso60")))
+              nav_panel("15 dias", withSpinner(plotlyOutput(ns("atraso15")))),
+              nav_panel("30 dias", withSpinner(plotlyOutput(ns("atraso30")))),
+              nav_panel("45 dias", withSpinner(plotlyOutput(ns("atraso45")))),
+              nav_panel("60 dias", withSpinner(plotlyOutput(ns("atraso60"))))
             )
           ),
           nav_panel("Chegada de pessoas expostas",
@@ -93,10 +93,10 @@ comportamento_inicialUI <- function(id) {
             ),
             tags$p(class = "section-small", tags$em("São considerados 0 infectados e 0 expostos no início.")),
             navset_card_tab(
-              nav_panel("1 exposto por dia", plotlyOutput(ns("espostos1"))),
-              nav_panel("3 expostos por dia", plotlyOutput(ns("espostos3"))),
-              nav_panel("5 expostos por dia", plotlyOutput(ns("espostos5"))),
-              nav_panel("10 expostos por dia", plotlyOutput(ns("espostos10")))
+              nav_panel("1 exposto por dia", withSpinner(plotlyOutput(ns("espostos1")))),
+              nav_panel("3 expostos por dia", withSpinner(plotlyOutput(ns("espostos3")))),
+              nav_panel("5 expostos por dia", withSpinner(plotlyOutput(ns("espostos5")))),
+              nav_panel("10 expostos por dia", withSpinner(plotlyOutput(ns("espostos10"))))
             )
           )
         )

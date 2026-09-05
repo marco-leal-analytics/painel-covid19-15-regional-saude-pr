@@ -33,21 +33,21 @@ mapa_cidades_panelUI <- function(id) {
 
   numero_reproducao <- nav_panel("Número de reprodução",
     fluidRow(column(width = 12, align = "right", sobre1)),
-    ui_card(title = "Número de reprodução atual", valueBoxOutput(ns("rzero"))),
-    ui_card(title = "Evolução do número de reprodução", plotlyOutput(ns("rzerov")))
+    ui_card(title = "Número de reprodução atual", withSpinner(valueBoxOutput(ns("rzero")))),
+    ui_card(title = "Evolução do número de reprodução", withSpinner(plotlyOutput(ns("rzerov"))))
   )
 
   taxa_propagacao <- nav_panel("Taxa de propagação",
     ui_card(title = "Taxa de propagação",
       div(class = "kpi-grid",
-          valueBoxOutput(ns("beta")),
-          valueBoxOutput(ns("rsquared")),
-          valueBoxOutput(ns("pvalue"))
+          withSpinner(valueBoxOutput(ns("beta"))),
+          withSpinner(valueBoxOutput(ns("rsquared"))),
+          withSpinner(valueBoxOutput(ns("pvalue")))
       )
     ),
     navset_card_tab(
-      nav_panel("Ajuste exponencial", plotlyOutput(ns("ajuste"))),
-      nav_panel("Evolução da taxa de propagação", plotlyOutput(ns("betav")))
+      nav_panel("Ajuste exponencial", withSpinner(plotlyOutput(ns("ajuste")))),
+      nav_panel("Evolução da taxa de propagação", withSpinner(plotlyOutput(ns("betav"))))
     )
   )
 
@@ -55,19 +55,19 @@ mapa_cidades_panelUI <- function(id) {
     ui_card(
       title = "Evolução do número de infectados",
       subtitle = "Nesta aba apresentamos o número estimado de pessoas infectadas. Nesta estimativa estamos supondo que cada pessoa infectada se recupera em exatamente 10 dias.",
-      plotlyOutput(ns("infectados"))
+      withSpinner(plotlyOutput(ns("infectados")))
     )
   )
 
   tags$div(class = "mla-modal-panel",
     fluidRow(column(width = 12, align = "center", tags$h3(strong(textOutput(ns("painel_text")))))),
     navset_card_tab(id = ns("tabset"),
-      nav_panel("Casos confirmados acumulados", plotlyOutput(ns("plot_gcidades"), height = 460)),
-      nav_panel("Casos por dia", plotlyOutput(ns("plot_por_dia_municipio"), height = 460)),
-      nav_panel("Casos com viagem", uiOutput(ns("u1"))),
-      nav_panel("Incidência", plotlyOutput(ns("plot_incidencia_municipios"), height = 460)),
-      nav_panel("Faixa etária", plotlyOutput(ns("plot_por_faixaetaria_municipio"), height = 460)),
-      nav_panel("Sexo", uiOutput(ns("plot_sexo_municipio"))),
+      nav_panel("Casos confirmados acumulados", withSpinner(plotlyOutput(ns("plot_gcidades"), height = 460))),
+      nav_panel("Casos por dia", withSpinner(plotlyOutput(ns("plot_por_dia_municipio"), height = 460))),
+      nav_panel("Casos com viagem", withSpinner(uiOutput(ns("u1")))),
+      nav_panel("Incidência", withSpinner(plotlyOutput(ns("plot_incidencia_municipios"), height = 460))),
+      nav_panel("Faixa etária", withSpinner(plotlyOutput(ns("plot_por_faixaetaria_municipio"), height = 460))),
+      nav_panel("Sexo", withSpinner(uiOutput(ns("plot_sexo_municipio")))),
       numero_reproducao,
       taxa_propagacao,
       evolucao_n_infec
@@ -89,7 +89,7 @@ mapa_cidadesUI <- function(id) {
     tags$div(class = "section",
       tags$div(class = "section-title", "Panorama por cidades da 15ª Regional do Estado do Paraná"),
       ui_card(
-        leafletOutput(ns("map"), height = 500)
+        withSpinner(leafletOutput(ns("map"), height = 500))
       )
     ),
 

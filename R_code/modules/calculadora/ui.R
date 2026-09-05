@@ -50,7 +50,7 @@ calculadora_seirUI <- function(id) {
 
     tags$div(class = "section",
       tags$div(class = "section-title", "Simulação"),
-      ui_card(plotlyOutput(ns("plotseir"), width = "auto"))
+      ui_card(withSpinner(plotlyOutput(ns("plotseir"), width = "auto")))
     )
   )
 }
