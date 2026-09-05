@@ -12,4 +12,5 @@ server <- function(input, output, session) {
   calculadora_seirServer("calculadora")
   colaboradoresServer("colaboradores")
   configuracoesServer("configuracoes")
+  sobreServer("sobre")
 }

@@ -13,6 +13,7 @@ if (file.exists(file.path(project_root, "renv/activate.R"))) {
 
 source(file.path(project_root, "R_code/packages.R"), encoding = "UTF-8")
 shiny::addResourcePath("assets", file.path(project_root, "assets"))
+shiny::addResourcePath("sobre-document", file.path(project_root, "R_code/modules/sobre"))
 source(file.path(project_root, "R_code/functions.R"), encoding = "UTF-8")
 source(file.path(project_root, "R_code/constants.R"), encoding = "UTF-8")
 source(file.path(project_root, "R_code/theme.R"), encoding = "UTF-8")
@@ -33,6 +34,8 @@ source(file.path(project_root, "R_code/modules/configuracoes/ui.R"), encoding = 
 source(file.path(project_root, "R_code/modules/configuracoes/server.R"), encoding = "UTF-8")
 source(file.path(project_root, "R_code/modules/comportamento_inicial/ui.R"), encoding = "UTF-8")
 source(file.path(project_root, "R_code/modules/comportamento_inicial/server.R"), encoding = "UTF-8")
+source(file.path(project_root, "R_code/modules/sobre/ui.R"), encoding = "UTF-8")
+source(file.path(project_root, "R_code/modules/sobre/server.R"), encoding = "UTF-8")
 
 source(file.path(project_root, "R_code/ui.R"), encoding = "UTF-8")
 source(file.path(project_root, "R_code/server.R"), encoding = "UTF-8")

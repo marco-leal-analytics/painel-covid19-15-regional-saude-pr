@@ -1,0 +1,163 @@
+---
+title: "Sobre o painel"
+description: "Objetivo, conteúdo e estrutura do Painel COVID-19 da 15ª Regional de Saúde do Paraná."
+page-layout: full
+format:
+  html:
+    toc: false
+    self-contained: false
+css: ../../../assets/css/app.css
+---
+
+<style>
+.platform-hero-copy { max-width: 780px; }
+.platform-hero-copy .hero-summary { max-width: 700px; }
+.platform-flow { margin: 0; color: var(--mla-accent-2); font-size: 1.05rem; font-weight: 700; line-height: 1.8; }
+.platform-flow span { margin: 0 .45rem; color: var(--mla-muted); }
+.platform-section-intro { max-width: 780px; color: var(--mla-muted); }
+.platform-list { color: var(--mla-text); }
+.platform-list li { margin-bottom: .65rem; }
+.platform-links { display: flex; flex-wrap: wrap; gap: .75rem; margin-top: 1.5rem; }
+.platform-links a { display: inline-flex; align-items: center; min-height: 44px; padding: .65rem 1rem; border-radius: 6px; font-weight: 700; }
+.platform-links .secondary { border: 1px solid var(--mla-accent); color: var(--mla-accent-2); }
+.platform-links .secondary:hover { background: var(--mla-accent-soft); color: var(--mla-text); }
+@media (max-width: 700px) {
+  .platform-links a { width: 100%; justify-content: center; }
+  .platform-flow { font-size: .95rem; }
+}
+</style>
+
+<div class="mla-hero">
+
+<div class="hero-copy platform-hero-copy">
+
+<span class="eyebrow">15ª REGIONAL DE SAÚDE · COVID-19</span>
+
+# Um painel para acompanhar a COVID-19 na 15ª Regional de Saúde do Paraná
+
+<p class="hero-summary">
+Aplicação interativa desenvolvida em R e Shiny para apoiar o acompanhamento epidemiológico dos municípios da 15ª Regional de Saúde, transformando registros de casos em indicadores, tabelas, mapas e gráficos.
+</p>
+
+<div class="platform-links">
+<a class="secondary" href="#panorama" onclick="return selectParentTab('Painel Geral');">Ver panorama geral</a>
+<a class="secondary" href="#mapa" onclick="return selectParentTab('Mapa de Cidades');">Explorar o mapa</a>
+</div>
+
+</div>
+
+<div class="hero-visual hero-mark" aria-label="Painel COVID-19">COVID-19</div>
+
+</div>
+
+::: {.callout-success}
+## Objetivo do painel
+
+Consolidar os registros epidemiológicos dos municípios da regional e apresentar casos por dia, casos acumulados, incidência por milhão de habitantes, óbitos, sexo e faixa etária.
+
+O painel também permite consultar os dados por município em mapas e gráficos interativos, exibir rankings de risco e estimativas de propagação, e oferecer uma calculadora baseada no modelo SEIR para simulações exploratórias, apoiando a comunicação dos resultados para equipes de saúde e colaboradores.
+:::
+
+## O que pode ser encontrado
+
+::: {.insight-grid}
+::: {.insight-box}
+### Panorama geral
+
+Acompanhamento consolidado dos casos confirmados, óbitos e incidência de COVID-19 nos municípios da regional, com indicadores e gráficos de evolução temporal.
+:::
+
+::: {.insight-box}
+### Mapa de cidades
+
+Mapa interativo com os casos confirmados por município. Ao clicar em uma cidade é possível abrir um painel detalhado com séries históricas, incidência e faixa etária.
+:::
+
+::: {.insight-box}
+### Nível de risco
+
+Ranking das cidades segundo o risco estimado de aumento de casos, calculado a partir da prevalência das infecções, da taxa de propagação estimada e do tamanho da população.
+:::
+
+::: {.insight-box}
+### Comportamento inicial
+
+Simulação de como o atraso na adoção de medidas de mitigação ou a chegada de pessoas expostas afeta o crescimento inicial da epidemia em uma cidade escolhida.
+:::
+
+::: {.insight-box}
+### Calculadora SEIR
+
+Simulação da evolução da epidemia com o modelo SEIR (Suscetíveis-Expostos-Infectados-Recuperados), ajustando população, taxas de propagação, incubação, recuperação e valores iniciais.
+:::
+
+::: {.insight-box}
+### Colaboradores
+
+Equipe responsável pelo acompanhamento epidemiológico da regional e pelo desenvolvimento estatístico e computacional do painel, em parceria com os departamentos de Estatística e Matemática da UEM.
+:::
+:::
+
+## Como o painel está organizado
+
+<p class="platform-section-intro">Cada aba tem uma função própria, do panorama consolidado às ferramentas de simulação. É possível começar pela visão geral, aprofundar por município no mapa, avaliar o risco relativo e explorar cenários com os modelos.</p>
+
+<p class="platform-flow">
+Painel Geral <span>→</span> Mapa de Cidades <span>→</span> Nível de Risco <span>→</span> Comportamento Inicial <span>→</span> Calculadora SEIR <span>→</span> Colaboradores
+</p>
+
+## Origem e tratamento dos dados
+
+::: {.insight-grid}
+::: {.insight-box}
+### Registros municipais
+
+Os dados de casos, óbitos e população dos municípios da 15ª Regional de Saúde são consolidados e disponibilizados para consulta na aba Configurações.
+:::
+
+::: {.insight-box}
+### Indicadores calculados
+
+Casos por dia, casos acumulados e incidência por milhão de habitantes são derivados dos registros brutos para permitir comparações entre municípios e ao longo do tempo.
+:::
+
+::: {.insight-box}
+### Modelagem epidemiológica
+
+O nível de risco, o comportamento inicial e a calculadora SEIR usam modelos estatísticos e matemáticos para estimar cenários de propagação, não substituindo a vigilância epidemiológica oficial.
+:::
+:::
+
+## Tecnologias utilizadas
+
+<ul class="platform-list">
+<li>R e Shiny, com módulos <code>moduleServer()</code>/<code>NS()</code> organizados por aba.</li>
+<li><code>bslib</code> para o tema visual, <code>plotly</code> para gráficos interativos e <code>leaflet</code>/<code>sf</code> para os mapas.</li>
+<li><code>DT</code> para tabelas interativas e <code>dplyr</code>/<code>tidyverse</code> para tratamento dos dados.</li>
+<li><code>deSolve</code> e <code>EpiDynamics</code> para os componentes de modelagem epidemiológica.</li>
+<li>Quarto para a documentação editorial do painel, como esta página Sobre.</li>
+</ul>
+
+::: {.closing-statement}
+## Aviso importante
+
+As estimativas de risco e as simulações apresentadas neste painel têm caráter exploratório e educacional. Elas não substituem as orientações e os boletins oficiais das autoridades de saúde.
+
+<div class="platform-links">
+<a class="secondary" href="#geral" onclick="return selectParentTab('Painel Geral');">Voltar ao Painel Geral</a>
+</div>
+:::
+
+<script>
+function selectParentTab(target) {
+  var parentDocument = window.parent.document;
+  var links = parentDocument.querySelectorAll('[data-value]');
+  for (var i = 0; i < links.length; i++) {
+    if (links[i].getAttribute('data-value') === target) {
+      links[i].click();
+      return false;
+    }
+  }
+  return true;
+}
+</script>
